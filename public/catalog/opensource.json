@@ -1,0 +1,158 @@
+{
+  "schemaVersion": 1,
+  "sourceId": "opensource",
+  "name": "Открытые игры",
+  "updatedAt": "2026-10-11T00:00:00Z",
+  "games": [
+    {
+      "slug": "supertuxkart",
+      "title": "SuperTuxKart",
+      "developer": "SuperTuxKart Team",
+      "shortDescription": "Аркадные гонки на картах с бонусами, сюжетным режимом и сетевой игрой.",
+      "description": "SuperTuxKart — трёхмерная аркадная гонка с десятками трасс, персонажами из мира открытого ПО и множеством режимов: Гран-при, гонка на время, футбол, захват флага и сюжетная кампания. Поддерживается игра по сети и на разделённом экране.",
+      "genres": ["Гонки", "Аркада", "Мультиплеер"],
+      "coverUrl": "/covers/supertuxkart.png",
+      "heroUrl": "/covers/supertuxkart.png",
+      "screenshots": [],
+      "pageUrl": "https://supertuxkart.net/",
+      "license": "GPL-3.0",
+      "releaseDate": "2022-11-17",
+      "popularity": 98,
+      "requirements": {
+        "os": "Windows 10/11 x64",
+        "cpu": "Двухъядерный 2 ГГц",
+        "ram": "2 ГБ",
+        "gpu": "OpenGL 3.3 / DirectX 9",
+        "storage": "2 ГБ"
+      },
+      "package": {
+        "version": "1.4",
+        "url": "https://github.com/supertuxkart/stk-code/releases/download/1.4/SuperTuxKart-1.4-win.zip",
+        "sizeBytes": 865959537,
+        "sha256": "3f4638ab06c87c6ade221289513c7ad7f68eb860badc4b944d9b42f62d1adf12",
+        "format": "zip",
+        "executable": "SuperTuxKart-1.4-win/stk-code/build-x86_64/bin/supertuxkart.exe"
+      }
+    },
+    {
+      "slug": "openra",
+      "title": "OpenRA",
+      "developer": "OpenRA Developers",
+      "shortDescription": "Современный движок для классических стратегий Command & Conquer.",
+      "description": "OpenRA воссоздаёт классические стратегии в реальном времени Red Alert, Tiberian Dawn и Dune 2000 с современным интерфейсом, сетевой игрой и редактором карт. Оригинальные игровые ресурсы, которые EA распространяет бесплатно, загружаются самой игрой при первом запуске.",
+      "genres": ["Стратегия", "RTS", "Мультиплеер"],
+      "coverUrl": "/covers/openra.png",
+      "heroUrl": "/covers/openra.png",
+      "screenshots": [],
+      "pageUrl": "https://www.openra.net/",
+      "license": "GPL-3.0",
+      "releaseDate": "2023-10-10",
+      "popularity": 90,
+      "requirements": {
+        "os": "Windows 10/11 x64",
+        "cpu": "Двухъядерный 1.8 ГГц",
+        "ram": "2 ГБ",
+        "gpu": "OpenGL 3.2",
+        "storage": "500 МБ"
+      },
+      "package": {
+        "version": "release-20231010",
+        "url": "https://github.com/OpenRA/OpenRA/releases/download/release-20231010/OpenRA-release-20231010-x64-winportable.zip",
+        "sizeBytes": 62219933,
+        "sha256": "219ede938f41ddc6c054c4b80d25d695c50792a09b8523454df65b18106f455b",
+        "format": "zip",
+        "executable": "RedAlert.exe"
+      }
+    },
+    {
+      "slug": "shattered-pixel-dungeon",
+      "title": "Shattered Pixel Dungeon",
+      "developer": "Shattered Pixel",
+      "shortDescription": "Пошаговый рогалик о спуске в процедурно генерируемое подземелье.",
+      "description": "Shattered Pixel Dungeon — классический пошаговый roguelike: четыре класса героев, сотни предметов, случайно генерируемые уровни и честная сложность. Каждый забег уникален, а смерть — окончательна.",
+      "genres": ["Рогалик", "RPG", "Пиксель-арт"],
+      "coverUrl": "/covers/shattered-pd.png",
+      "heroUrl": "/covers/shattered-pd.png",
+      "screenshots": [],
+      "pageUrl": "https://shatteredpixel.com/",
+      "license": "GPL-3.0",
+      "releaseDate": "2024-10-09",
+      "popularity": 86,
+      "requirements": {
+        "os": "Windows 10/11 x64",
+        "cpu": "Любой x64",
+        "ram": "1 ГБ",
+        "gpu": "OpenGL 2.0",
+        "storage": "300 МБ"
+      },
+      "package": {
+        "version": "2.5.4",
+        "url": "https://github.com/00-Evan/shattered-pixel-dungeon/releases/download/v2.5.4/ShatteredPD-v2.5.4-Windows.zip",
+        "sizeBytes": 102930852,
+        "sha256": "83af2429ff14895e5e190cffa21c621487192992f73eb71e2931a107932c87bb",
+        "format": "zip",
+        "executable": "Shattered Pixel Dungeon.exe"
+      }
+    },
+    {
+      "slug": "openttd",
+      "title": "OpenTTD",
+      "developer": "OpenTTD Team",
+      "shortDescription": "Экономический симулятор транспортной империи: поезда, грузовики, корабли и самолёты.",
+      "description": "OpenTTD — открытый ремейк Transport Tycoon Deluxe. Стройте железные дороги, автотрассы, порты и аэропорты, развивайте города и соревнуйтесь с другими игроками по сети. Бесплатный графический набор OpenGFX игра предложит загрузить при первом запуске.",
+      "genres": ["Симулятор", "Экономика", "Стратегия"],
+      "coverUrl": "/covers/openttd.png",
+      "heroUrl": "/covers/openttd.png",
+      "screenshots": [],
+      "pageUrl": "https://www.openttd.org/",
+      "license": "GPL-2.0",
+      "releaseDate": "2024-05-03",
+      "popularity": 82,
+      "requirements": {
+        "os": "Windows 10/11 x64",
+        "cpu": "Любой x64",
+        "ram": "512 МБ",
+        "gpu": "Любая",
+        "storage": "200 МБ"
+      },
+      "package": {
+        "version": "14.1",
+        "url": "https://cdn.openttd.org/openttd-releases/14.1/openttd-14.1-windows-win64.zip",
+        "sizeBytes": 10162663,
+        "sha256": "3db67e93afbf6cb46db0c1f0ec364fb28abb12ee867202b2c86775cf6a9eebf0",
+        "format": "zip",
+        "executable": "openttd-14.1-windows-win64/openttd.exe"
+      }
+    },
+    {
+      "slug": "teeworlds",
+      "title": "Teeworlds",
+      "developer": "Teeworlds Team",
+      "shortDescription": "Быстрый двухмерный сетевой шутер с крюком-кошкой.",
+      "description": "Teeworlds — динамичный 2D-шутер для сетевой игры: deathmatch, командные бои и захват флага. Крюк-кошка, ракетные прыжки и мгновенные респауны делают каждый матч стремительным.",
+      "genres": ["Экшен", "Шутер", "Мультиплеер"],
+      "coverUrl": "/covers/teeworlds.png",
+      "heroUrl": "/covers/teeworlds.png",
+      "screenshots": [],
+      "pageUrl": "https://www.teeworlds.com/",
+      "license": "Teeworlds License (zlib)",
+      "releaseDate": "2020-04-19",
+      "popularity": 74,
+      "requirements": {
+        "os": "Windows 10/11 x64",
+        "cpu": "Любой x64",
+        "ram": "512 МБ",
+        "gpu": "OpenGL 1.5",
+        "storage": "100 МБ"
+      },
+      "package": {
+        "version": "0.7.5",
+        "url": "https://github.com/teeworlds/teeworlds/releases/download/0.7.5/teeworlds-0.7.5-win64.zip",
+        "sizeBytes": 10255484,
+        "sha256": "83cd75884a0e8339b4910da1bfe4d737af794d35600cd065e7c2222750b37585",
+        "format": "zip",
+        "executable": "teeworlds-0.7.5-win64/teeworlds.exe"
+      }
+    }
+  ]
+}
