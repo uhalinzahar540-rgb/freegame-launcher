@@ -14,7 +14,7 @@ export default defineConfig({
   },
   clearScreen: false,
   server: {
-    port: 1420,
+    port: process.env.TAURI_ENV_PLATFORM ? 1420 : 3000,
     strictPort: true,
     host: tauriDevHost || true,
     allowedHosts: true,
