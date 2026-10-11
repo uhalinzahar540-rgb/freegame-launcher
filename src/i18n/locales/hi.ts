@@ -358,4 +358,16 @@ export const hi: Messages = {
   'preview.localStatus': 'डिस्क से गेम जोड़ना केवल डेस्कटॉप संस्करण में काम करता है।',
   'preview.freetpStatus':
     'ब्राउज़र में कैटलॉग उपलब्ध नहीं है (साइट CORS की अनुमति नहीं देती)। डेस्कटॉप संस्करण सार्वजनिक RSS फ़ीड पढ़ता है; FreeTP से डाउनलोड समर्थित नहीं है।',
+  'action.openSteam': "Steam में खोलें",
+  'action.steamHint': "आधिकारिक Steam क्लाइंट से खरीदें और इंस्टॉल करें",
+  'game.free': "मुफ़्त",
+  'game.inSteam': "Steam में",
+  'details.steamNote': "Steam पर बिकने वाला एक पेड गेम। लॉन्चर इसकी मौजूदा कीमत दिखाता है और इसे आधिकारिक Steam क्लाइंट में खोलता है: वहाँ खरीदें और इंस्टॉल करें, फिर यहाँ से खेलें बटन से चलाएँ।",
+  'details.installViaSteam': "Steam से इंस्टॉल करें",
+  'details.openSteam': "Steam पेज",
+  'details.price': "कीमत",
+  'details.noClient': "Steam क्लाइंट नहीं मिला: लिंक ब्राउज़र में खुलेंगे।",
+  'home.steam': "Steam पर लोकप्रिय",
+  'catalog.onSale': "सेल में",
+  'preview.steamStatus': "कीमतें बंडल किए गए स्नैपशॉट से हैं। डेस्कटॉप संस्करण आपके क्षेत्र की कीमतें अपडेट करता है और Steam में इंस्टॉल गेम पहचानता है।",
 }

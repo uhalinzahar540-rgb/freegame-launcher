@@ -9,6 +9,7 @@ mod downloads;
 mod i18n;
 mod library;
 mod models;
+mod steam;
 mod store;
 mod util;
 
@@ -140,6 +141,7 @@ fn main() {
             commands::get_free_space,
             commands::get_notifications,
             commands::mark_notifications_read,
+            commands::steam_open,
         ])
         .run(tauri::generate_context!())
         .expect("failed to start FreeGame Launcher");

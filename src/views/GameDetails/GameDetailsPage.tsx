@@ -9,11 +9,13 @@ import {
   Play,
   ShieldCheck,
   Trash2,
+  Download,
 } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router'
 import { GameActionButton } from '@/components/GameActionButton'
 import { GameCover } from '@/components/GameCard'
 import { Modal } from '@/components/Modal'
+import { PriceTag } from '@/components/PriceTag'
 import { Badge, Cta, EmptyState } from '@/components/ui/primitives'
 import { useT, type MessageKey } from '@/i18n'
 import { formatBytes, formatDate } from '@/lib/format'
@@ -32,7 +34,7 @@ export function GameDetailsPage() {
   const state = useGameState(id)
   const loading = useLauncherStore((s) => s.catalogLoading)
   const source = useLauncherStore((s) => s.sources.find((x) => x.id === state.game?.sourceId))
-  const { verify, uninstall, setFavorite, launch } = useLauncherStore.getState()
+  const { verify, uninstall, setFavorite, launch, openSteam } = useLauncherStore.getState()
   const [confirmRemove, setConfirmRemove] = useState(false)
   const [verifying, setVerifying] = useState(false)
 
@@ -112,7 +114,13 @@ export function GameDetailsPage() {
             {game?.shortDescription && <p className="text-pretty text-foreground/80">{game.shortDescription}</p>}
 
             <div className="flex flex-wrap items-center gap-2">
+              {game?.store && <PriceTag store={game.store} size="lg" className="h-12 me-1" />}
               <GameActionButton gameId={id} size="lg" />
+              {phase === 'store' && game?.store && (
+                <Cta size="lg" variant="secondary" onClick={() => openSteam(game.store!.steamAppId, 'install')}>
+                  <Download aria-hidden /> {t('details.installViaSteam')}
+                </Cta>
+              )}
               {phase === 'update' && (
                 <Cta size="lg" variant="secondary" onClick={() => launch(id)}>
                   <Play className="fill-current" aria-hidden /> {t('common.play')}
@@ -151,7 +159,19 @@ export function GameDetailsPage() {
               </div>
             )}
 
-            {game && !game.package && !installation && (
+            {game?.store && (
+              <div className="flex gap-3 rounded-xl border border-border bg-card/80 p-3 text-sm">
+                <Info className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+                <div className="flex flex-col gap-1 text-foreground/80">
+                  <p>{t('details.steamNote')}</p>
+                  {backend.isDesktop && !game.store.clientAvailable && (
+                    <p className="text-muted-foreground">{t('details.noClient')}</p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {game && !game.package && !game.store && !installation && (
               <div className="flex gap-3 rounded-xl border border-warning/30 bg-warning/10 p-3 text-sm">
                 <Info className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden />
                 <p className="text-foreground/80">
@@ -226,6 +246,12 @@ export function GameDetailsPage() {
                   label={t('details.source')}
                   value={source?.name ?? (game ? sourceLabel(game.sourceId) : t('source.local'))}
                 />
+                {game?.store && (
+                  <InfoRow
+                    label={t('details.price')}
+                    value={game.store.price?.finalFormatted ?? (game.store.isFree ? t('game.free') : '—')}
+                  />
+                )}
                 {game?.package && <InfoRow label={t('details.version')} value={game.package.version} />}
                 {installation?.version && (
                   <InfoRow label={t('details.installedVersion')} value={installation.version} />
@@ -258,7 +284,11 @@ export function GameDetailsPage() {
                   onClick={() => backend.openExternal(game.pageUrl!)}
                 >
                   <ExternalLink aria-hidden />
-                  {game.sourceId === 'freetp' ? t('details.openFreetp') : t('details.officialPage')}
+                  {game.sourceId === 'freetp'
+                    ? t('details.openFreetp')
+                    : game.store
+                      ? t('details.openSteam')
+                      : t('details.officialPage')}
                 </Cta>
               )}
             </div>

@@ -360,4 +360,16 @@ export const ru: Messages = {
   'preview.localStatus': 'Добавление игр с диска работает только в десктопной версии.',
   'preview.freetpStatus':
     'В браузере каталог недоступен (сайт не разрешает CORS). Десктопная версия читает публичную RSS-ленту; загрузка через FreeTP не поддерживается.',
+  'action.openSteam': "Открыть в Steam",
+  'action.steamHint': "Покупка и установка — через официальный клиент Steam",
+  'game.free': "Бесплатно",
+  'game.inSteam': "В Steam",
+  'details.steamNote': "Платная игра из Steam. Лаунчер показывает актуальную цену и открывает её в официальном клиенте Steam: купите и установите игру там, а запускайте отсюда кнопкой «Играть».",
+  'details.installViaSteam': "Установить через Steam",
+  'details.openSteam': "Страница в Steam",
+  'details.price': "Цена",
+  'details.noClient': "Клиент Steam не найден: ссылки откроются в браузере.",
+  'home.steam': "Популярное в Steam",
+  'catalog.onSale': "Со скидкой",
+  'preview.steamStatus': "Цены из встроенного снимка. Десктопная версия обновляет цены для вашего региона и находит игры, установленные в Steam.",
 }

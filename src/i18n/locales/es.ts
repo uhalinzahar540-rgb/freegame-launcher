@@ -361,4 +361,16 @@ export const es: Messages = {
   'preview.localStatus': 'Añadir juegos desde el disco solo funciona en la versión de escritorio.',
   'preview.freetpStatus':
     'El catálogo no está disponible en el navegador (el sitio no permite CORS). La versión de escritorio lee el feed RSS público; no se admite la descarga mediante FreeTP.',
+  'action.openSteam': "Abrir en Steam",
+  'action.steamHint': "Compra e instalación a través del cliente oficial de Steam",
+  'game.free': "Gratis",
+  'game.inSteam': "En Steam",
+  'details.steamNote': "Un juego de pago vendido en Steam. El lanzador muestra su precio actual y lo abre en el cliente oficial de Steam: cómpralo e instálalo allí y luego inícialo aquí con Jugar.",
+  'details.installViaSteam': "Instalar con Steam",
+  'details.openSteam': "Página de Steam",
+  'details.price': "Precio",
+  'details.noClient': "No se encontró el cliente de Steam: los enlaces se abren en el navegador.",
+  'home.steam': "Popular en Steam",
+  'catalog.onSale': "En oferta",
+  'preview.steamStatus': "Precios de la instantánea incluida. La versión de escritorio actualiza los precios de tu región y detecta los juegos instalados en Steam.",
 }

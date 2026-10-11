@@ -6,6 +6,8 @@ import type { DownloadTask, Game, Installation, UpdateInfo } from '@/types'
 export type GamePhase =
   | 'unavailable'
   | 'external'
+  | 'store'
+  | 'store-installed'
   | 'installable'
   | 'queued'
   | 'downloading'
@@ -45,6 +47,7 @@ export function resolveGameState(
     return { ...base, phase: 'installed' }
   }
   if (!game) return { ...base, phase: 'unavailable' }
+  if (game.store) return { ...base, phase: game.store.installed ? 'store-installed' : 'store' }
   if (game.package) return { ...base, phase: 'installable' }
   if (game.pageUrl) return { ...base, phase: 'external' }
   return { ...base, phase: 'unavailable' }
@@ -78,6 +81,8 @@ export function sourceLabel(sourceId: string): string {
       return t('source.opensource')
     case 'freetp':
       return 'FreeTP'
+    case 'steam':
+      return 'Steam'
     case 'local':
       return t('source.local')
     default:

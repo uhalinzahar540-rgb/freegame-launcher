@@ -358,4 +358,16 @@ export const ja: Messages = {
   'preview.localStatus': 'ディスクからのゲーム追加はデスクトップ版でのみ動作します。',
   'preview.freetpStatus':
     'ブラウザーではカタログを利用できません（サイトが CORS を許可していません）。デスクトップ版は公開 RSS フィードを読み込みます。FreeTP 経由のダウンロードには対応していません。',
+  'action.openSteam': "Steam で開く",
+  'action.steamHint': "購入とインストールは公式 Steam クライアントで行います",
+  'game.free': "無料",
+  'game.inSteam': "Steam",
+  'details.steamNote': "Steam で販売されている有料ゲームです。ランチャーは最新価格を表示し、公式 Steam クライアントで開きます。そこで購入・インストールし、ここから「プレイ」で起動できます。",
+  'details.installViaSteam': "Steam でインストール",
+  'details.openSteam': "Steam ページ",
+  'details.price': "価格",
+  'details.noClient': "Steam クライアントが見つかりません。リンクはブラウザで開きます。",
+  'home.steam': "Steam で人気",
+  'catalog.onSale': "セール中",
+  'preview.steamStatus': "価格は同梱のスナップショットです。デスクトップ版では地域の価格を更新し、Steam にインストール済みのゲームを検出します。",
 }

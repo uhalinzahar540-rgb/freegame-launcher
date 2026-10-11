@@ -358,4 +358,16 @@ export const tr: Messages = {
   'preview.localStatus': 'Diskten oyun ekleme yalnızca masaüstü sürümünde çalışır.',
   'preview.freetpStatus':
     'Katalog tarayıcıda kullanılamıyor (site CORS’a izin vermiyor). Masaüstü sürümü herkese açık RSS akışını okur; FreeTP üzerinden indirme desteklenmez.',
+  'action.openSteam': "Steam’de aç",
+  'action.steamHint': "Satın alma ve kurulum resmi Steam istemcisi üzerinden",
+  'game.free': "Ücretsiz",
+  'game.inSteam': "Steam’de",
+  'details.steamNote': "Steam’de satılan ücretli bir oyun. Başlatıcı güncel fiyatı gösterir ve oyunu resmi Steam istemcisinde açar: orada satın alıp kurun, sonra buradan Oyna ile başlatın.",
+  'details.installViaSteam': "Steam ile kur",
+  'details.openSteam': "Steam sayfası",
+  'details.price': "Fiyat",
+  'details.noClient': "Steam istemcisi bulunamadı: bağlantılar tarayıcıda açılır.",
+  'home.steam': "Steam’de popüler",
+  'catalog.onSale': "İndirimde",
+  'preview.steamStatus': "Fiyatlar dahili anlık görüntüden. Masaüstü sürümü bölgenizin fiyatlarını günceller ve Steam’de kurulu oyunları algılar.",
 }

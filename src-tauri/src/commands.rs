@@ -182,6 +182,8 @@ pub async fn update_settings(app: State<'_, Shared>, patch: serde_json::Value) -
     if next.language != before.language {
         app.update_tray_language();
         app.emit(BackendEvent::SourcesChanged);
+        // Steam descriptions and genres are localized.
+        app.emit(BackendEvent::CatalogChanged);
     }
     if next.max_concurrent_downloads != before.max_concurrent_downloads {
         downloads::schedule(&app);
@@ -203,6 +205,21 @@ pub async fn get_free_space(path: String) -> Res<Option<u64>> {
 #[tauri::command]
 pub async fn get_notifications(app: State<'_, Shared>) -> Res<Vec<AppNotification>> {
     Ok(app.store.read(|d| d.notifications.clone()))
+}
+
+/// Opens a Steam game in the official client (`store`, `install` or `run`), falling back to
+/// the store page in the browser when the client is not installed.
+#[tauri::command]
+pub async fn steam_open(app: State<'_, Shared>, app_id: u32, action: String) -> Res<()> {
+    use tauri_plugin_opener::OpenerExt;
+
+    let client_url = crate::steam::client_url(app_id, &action).ok_or_else(|| format!("unknown Steam action: {action}"))?;
+    let url = if crate::steam::scan_local().client_available {
+        client_url
+    } else {
+        crate::steam::store_page(app_id)
+    };
+    app.handle.opener().open_url(url, None::<&str>).map_err(|e| e.to_string())
 }
 
 #[tauri::command]

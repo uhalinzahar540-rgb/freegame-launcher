@@ -359,6 +359,18 @@ export const en = {
   'preview.localStatus': 'Adding games from disk works only in the desktop version.',
   'preview.freetpStatus':
     'The catalog is unavailable in the browser (the site does not allow CORS). The desktop version reads the public RSS feed; downloading via FreeTP is not supported.',
+  'action.openSteam': "Open in Steam",
+  'action.steamHint': "Buy and install through the official Steam client",
+  'game.free': "Free",
+  'game.inSteam': "In Steam",
+  'details.steamNote': "A paid game sold on Steam. The launcher shows its live price and opens it in the official Steam client: buy and install it there, then start it from here with Play.",
+  'details.installViaSteam': "Install via Steam",
+  'details.openSteam': "Steam page",
+  'details.price': "Price",
+  'details.noClient': "Steam client not found: links open in the browser.",
+  'home.steam': "Popular on Steam",
+  'catalog.onSale': "On sale",
+  'preview.steamStatus': "Prices are from the bundled snapshot. The desktop version refreshes prices for your region and detects games installed in Steam.",
 } as const
 
 export type MessageKey = keyof typeof en

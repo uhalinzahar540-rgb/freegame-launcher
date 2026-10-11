@@ -70,6 +70,7 @@ pub fn parse_catalog(text: &str) -> Result<Vec<Game>, String> {
             popularity: g.popularity.unwrap_or(0.0),
             requirements: g.requirements,
             package: g.package,
+            store: None,
         })
         .collect())
 }
@@ -118,6 +119,7 @@ pub fn parse_freetp_rss(bytes: &[u8]) -> Result<Vec<Game>, String> {
                 popularity: (total - index) as f64,
                 requirements: None,
                 package: None,
+                store: None,
                 created_at: date.clone(),
                 updated_at: date,
             })

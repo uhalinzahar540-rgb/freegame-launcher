@@ -357,4 +357,16 @@ export const ko: Messages = {
   'preview.localStatus': '디스크에서 게임 추가는 데스크톱 버전에서만 동작합니다.',
   'preview.freetpStatus':
     '브라우저에서는 카탈로그를 사용할 수 없습니다(사이트가 CORS를 허용하지 않음). 데스크톱 버전은 공개 RSS 피드를 읽으며, FreeTP를 통한 다운로드는 지원하지 않습니다.',
+  'action.openSteam': "Steam에서 열기",
+  'action.steamHint': "공식 Steam 클라이언트에서 구매 및 설치",
+  'game.free': "무료",
+  'game.inSteam': "Steam",
+  'details.steamNote': "Steam에서 판매되는 유료 게임입니다. 런처는 최신 가격을 보여 주고 공식 Steam 클라이언트에서 엽니다. 그곳에서 구매하고 설치한 뒤 여기서 플레이로 실행하세요.",
+  'details.installViaSteam': "Steam으로 설치",
+  'details.openSteam': "Steam 페이지",
+  'details.price': "가격",
+  'details.noClient': "Steam 클라이언트를 찾을 수 없습니다. 링크가 브라우저에서 열립니다.",
+  'home.steam': "Steam 인기 게임",
+  'catalog.onSale': "할인 중",
+  'preview.steamStatus': "가격은 내장 스냅샷 기준입니다. 데스크톱 버전은 지역 가격을 갱신하고 Steam에 설치된 게임을 감지합니다.",
 }

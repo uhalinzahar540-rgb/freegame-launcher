@@ -11,6 +11,7 @@ import type {
   NotificationKind,
   Settings,
   SourceInfo,
+  SteamAction,
   UpdateInfo,
   VerifyReport,
 } from '@/types'
@@ -54,6 +55,7 @@ interface LauncherState {
   clearFinishedDownloads(): Promise<void>
 
   launch(gameId: string): Promise<void>
+  openSteam(appId: number, action: SteamAction): Promise<void>
   uninstall(gameId: string): Promise<boolean>
   verify(gameId: string): Promise<VerifyReport | null>
   setFavorite(gameId: string, favorite: boolean): Promise<void>
@@ -240,6 +242,9 @@ export const useLauncherStore = create<LauncherState>((set, get) => {
       const ok = await attempt(() => backend.launchGame(gameId).then(() => true), () => t('store.launch'))
       if (ok) set((state) => ({ running: Array.from(new Set([...state.running, gameId])) }))
     },
+    async openSteam(appId, action) {
+      await attempt(() => backend.openSteam(appId, action).then(() => true), () => t('store.launch'))
+    },
     async uninstall(gameId) {
       const ok = await attempt(() => backend.uninstallGame(gameId).then(() => true), () => t('store.uninstall'))
       if (!ok) return false
@@ -321,7 +326,10 @@ export const useLauncherStore = create<LauncherState>((set, get) => {
       const next = saved ? { ...saved, ...patch } : previous
       set({ settings: next })
       applyAppearance(next)
-      if (languageChanged) void get().loadSources()
+      if (languageChanged) {
+        void get().loadSources()
+        void get().loadCatalog()
+      }
     },
     async setSourceEnabled(sourceId, enabled) {
       const source = await attempt(() => backend.setSourceEnabled(sourceId, enabled), () => t('store.sourceToggle'))

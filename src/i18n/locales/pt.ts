@@ -359,4 +359,16 @@ export const pt: Messages = {
   'preview.localStatus': 'Adicionar jogos do disco funciona apenas na versão desktop.',
   'preview.freetpStatus':
     'O catálogo não está disponível no navegador (o site não permite CORS). A versão desktop lê o feed RSS público; downloads via FreeTP não são suportados.',
+  'action.openSteam': "Abrir na Steam",
+  'action.steamHint': "Compra e instalação pelo cliente oficial da Steam",
+  'game.free': "Grátis",
+  'game.inSteam': "Na Steam",
+  'details.steamNote': "Um jogo pago vendido na Steam. O launcher mostra o preço atual e o abre no cliente oficial da Steam: compre e instale lá e depois inicie aqui com Jogar.",
+  'details.installViaSteam': "Instalar pela Steam",
+  'details.openSteam': "Página na Steam",
+  'details.price': "Preço",
+  'details.noClient': "Cliente Steam não encontrado: os links abrem no navegador.",
+  'home.steam': "Popular na Steam",
+  'catalog.onSale': "Em promoção",
+  'preview.steamStatus': "Preços do instantâneo incluído. A versão desktop atualiza os preços da sua região e detecta jogos instalados na Steam.",
 }

@@ -29,6 +29,7 @@ export function CatalogPage() {
   const genre = params.get('genre')
   const source = params.get('source')
   const installableOnly = params.get('installable') === '1'
+  const onSaleOnly = params.get('sale') === '1'
   const sort = (params.get('sort') as SortKey) || 'popular'
 
   function update(key: string, value: string | null) {
@@ -47,6 +48,7 @@ export function CatalogPage() {
       if (genre && !g.genres.includes(genre)) return false
       if (source && g.sourceId !== source) return false
       if (installableOnly && !g.package) return false
+      if (onSaleOnly && !(g.store?.price && g.store.price.discountPercent > 0)) return false
       if (!q) return true
       return (
         g.title.toLowerCase().includes(q) ||
@@ -73,9 +75,10 @@ export function CatalogPage() {
         sorted.sort((a, b) => b.popularity - a.popularity)
     }
     return sorted
-  }, [catalog, query, genre, source, installableOnly, sort])
+  }, [catalog, query, genre, source, installableOnly, onSaleOnly, sort])
 
-  const hasFilters = !!(query || genre || source || installableOnly)
+  const hasStore = useMemo(() => catalog.some((g) => g.store), [catalog])
+  const hasFilters = !!(query || genre || source || installableOnly || onSaleOnly)
 
   return (
     <div className="flex flex-col gap-6 p-6 lg:p-8">
@@ -135,6 +138,21 @@ export function CatalogPage() {
           >
             {t('catalog.installableOnly')}
           </button>
+          {hasStore && (
+            <button
+              type="button"
+              aria-pressed={onSaleOnly}
+              onClick={() => update('sale', onSaleOnly ? null : '1')}
+              className={cn(
+                'h-10 rounded-lg border px-3 text-sm font-medium transition-colors',
+                onSaleOnly
+                  ? 'border-primary bg-primary/15 text-foreground'
+                  : 'border-border bg-background text-muted-foreground hover:text-foreground',
+              )}
+            >
+              {t('catalog.onSale')}
+            </button>
+          )}
         </div>
 
         {genres.length > 0 && (

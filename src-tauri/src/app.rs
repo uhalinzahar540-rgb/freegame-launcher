@@ -12,6 +12,7 @@ use tauri::{AppHandle, Emitter, Manager, Wry};
 use crate::catalog::{self, FREETP_HOME, FREETP_RSS};
 use crate::i18n;
 use crate::models::*;
+use crate::steam::{self, PriceMap, SteamEntry};
 use crate::store::Store;
 use crate::util::{is_newer_version, now_iso};
 
@@ -34,6 +35,9 @@ pub struct CatalogState {
     pub opensource_error: Option<String>,
     pub freetp: Vec<Game>,
     pub freetp_error: Option<String>,
+    pub steam: Vec<SteamEntry>,
+    pub steam_prices: PriceMap,
+    pub steam_error: Option<String>,
 }
 
 pub struct Dirs {
@@ -136,6 +140,13 @@ impl App {
             .ok()
             .and_then(|bytes| serde_json::from_slice(&bytes).ok())
             .unwrap_or_default();
+        catalog.steam = steam::parse_bundled().unwrap_or_default();
+        catalog.steam_prices = fs::read(dirs.cache.join("steam-prices.json"))
+            .ok()
+            .and_then(|bytes| serde_json::from_slice::<SteamPriceCache>(&bytes).ok())
+            .filter(|cache| cache.region == steam::region())
+            .map(|cache| cache.prices)
+            .unwrap_or_default();
 
         Ok(Self {
             handle,
@@ -153,14 +164,22 @@ impl App {
     pub fn start_background_work(app: Shared) {
         crate::downloads::schedule(&app);
         tauri::async_runtime::spawn(async move {
-            let (freetp_enabled, remote_catalog, check_on_start) = app.store.read(|d| {
-                (d.source_enabled("freetp"), !d.settings.catalog_url.trim().is_empty(), d.settings.check_updates_on_start)
+            let (freetp_enabled, steam_enabled, remote_catalog, check_on_start) = app.store.read(|d| {
+                (
+                    d.source_enabled("freetp"),
+                    d.source_enabled("steam"),
+                    !d.settings.catalog_url.trim().is_empty(),
+                    d.settings.check_updates_on_start,
+                )
             });
             if remote_catalog {
                 let _ = app.refresh_source("opensource").await;
             }
             if freetp_enabled {
                 let _ = app.refresh_source("freetp").await;
+            }
+            if steam_enabled {
+                let _ = app.refresh_source("steam").await;
             }
             if check_on_start {
                 let updates = crate::library::check_updates(&app);
@@ -225,9 +244,16 @@ impl App {
     }
 
     pub fn catalog_games(&self) -> Vec<Game> {
-        let (os_enabled, ft_enabled, local_enabled, manual) = self.store.read(|d| {
+        let (os_enabled, ft_enabled, local_enabled, steam_enabled, manual, lang) = self.store.read(|d| {
             let manual: Vec<Installation> = d.installations.iter().filter(|i| i.manual).cloned().collect();
-            (d.source_enabled("opensource"), d.source_enabled("freetp"), d.source_enabled("local"), manual)
+            (
+                d.source_enabled("opensource"),
+                d.source_enabled("freetp"),
+                d.source_enabled("local"),
+                d.source_enabled("steam"),
+                manual,
+                d.settings.language.clone(),
+            )
         });
         let catalog = self.catalog.read().unwrap();
         let mut games = Vec::new();
@@ -236,6 +262,11 @@ impl App {
         }
         if ft_enabled {
             games.extend(catalog.freetp.iter().cloned());
+        }
+        if steam_enabled {
+            // Re-scanned on every read so games installed or removed in Steam show up immediately.
+            let local = steam::scan_local();
+            games.extend(catalog.steam.iter().map(|e| steam::to_game(e, &lang, &catalog.steam_prices, &local)));
         }
         if local_enabled {
             games.extend(manual.into_iter().map(manual_game));
@@ -257,6 +288,7 @@ impl App {
                     opensource: d.source_enabled("opensource"),
                     local: d.source_enabled("local"),
                     freetp: d.source_enabled("freetp"),
+                    steam: d.source_enabled("steam"),
                 },
                 d.source_sync.clone(),
                 d.installations.iter().filter(|i| i.manual).count(),
@@ -344,6 +376,36 @@ impl App {
                 game_count: catalog.freetp.len(),
                 capabilities: SourceCapabilities { search: true, metadata: true, auto_install: false, open_page: true, updates: false },
             },
+            SourceInfo {
+                id: "steam".into(),
+                name: "Steam".into(),
+                kind: "store",
+                homepage: Some(steam::STEAM_HOME.into()),
+                enabled: enabled.steam,
+                status: if !enabled.steam {
+                    "disabled"
+                } else if catalog.steam_error.is_some() {
+                    "limited"
+                } else {
+                    "online"
+                },
+                status_message: Some(match &catalog.steam_error {
+                    Some(error) => format!(
+                        "{} {error}",
+                        i18n::pick3(&lang, "Prices could not be refreshed:", "Не удалось обновить цены:", "Не вдалося оновити ціни:")
+                    ),
+                    None => i18n::pick3(
+                        &lang,
+                        "Popular paid games with live prices. Purchase and installation happen in the official Steam client.",
+                        "Популярные платные игры с актуальными ценами. Покупка и установка — в официальном клиенте Steam.",
+                        "Популярні платні ігри з актуальними цінами. Купівля та встановлення — в офіційному клієнті Steam.",
+                    )
+                    .into(),
+                }),
+                last_sync: sync.get("steam").cloned(),
+                game_count: catalog.steam.len(),
+                capabilities: SourceCapabilities { search: true, metadata: true, auto_install: false, open_page: true, updates: false },
+            },
         ]
     }
 
@@ -395,12 +457,32 @@ impl App {
                     Err(error) => catalog.freetp_error = Some(error),
                 }
             }
+            "steam" => {
+                let (ids, region) = {
+                    let catalog = self.catalog.read().unwrap();
+                    (catalog.steam.iter().map(|e| e.app_id).collect::<Vec<_>>(), steam::region())
+                };
+                let result = steam::fetch_prices(&self.http, &ids, &region).await;
+                let mut catalog = self.catalog.write().unwrap();
+                match result {
+                    Ok(prices) => {
+                        let cache = SteamPriceCache { region, prices };
+                        if let Ok(bytes) = serde_json::to_vec(&cache) {
+                            let _ = fs::write(self.dirs.cache.join("steam-prices.json"), bytes);
+                        }
+                        catalog.steam_prices = cache.prices;
+                        catalog.steam_error = None;
+                    }
+                    Err(error) => catalog.steam_error = Some(error),
+                }
+            }
             "local" => {}
             other => return Err(format!("unknown source: {other}")),
         }
         let ok = match id {
             "opensource" => self.catalog.read().unwrap().opensource_error.is_none(),
             "freetp" => self.catalog.read().unwrap().freetp_error.is_none(),
+            "steam" => self.catalog.read().unwrap().steam_error.is_none(),
             _ => true,
         };
         if ok {
@@ -516,6 +598,13 @@ struct EnabledSources {
     opensource: bool,
     local: bool,
     freetp: bool,
+    steam: bool,
+}
+
+#[derive(serde::Serialize, Deserialize)]
+struct SteamPriceCache {
+    region: String,
+    prices: PriceMap,
 }
 
 fn manual_game(inst: Installation) -> Game {
@@ -537,6 +626,7 @@ fn manual_game(inst: Installation) -> Game {
         popularity: 0.0,
         requirements: None,
         package: None,
+        store: None,
         created_at: inst.installed_at.clone(),
         updated_at: inst.installed_at,
     }

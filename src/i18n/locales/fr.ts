@@ -363,4 +363,16 @@ export const fr: Messages = {
   'preview.localStatus': 'L’ajout de jeux depuis le disque ne fonctionne que dans la version bureau.',
   'preview.freetpStatus':
     'Le catalogue n’est pas disponible dans le navigateur (le site n’autorise pas CORS). La version bureau lit le flux RSS public ; le téléchargement via FreeTP n’est pas pris en charge.',
+  'action.openSteam': "Ouvrir dans Steam",
+  'action.steamHint': "Achat et installation via le client Steam officiel",
+  'game.free': "Gratuit",
+  'game.inSteam': "Dans Steam",
+  'details.steamNote': "Un jeu payant vendu sur Steam. Le lanceur affiche son prix actuel et l’ouvre dans le client Steam officiel : achetez-le et installez-le là-bas, puis lancez-le ici avec Jouer.",
+  'details.installViaSteam': "Installer via Steam",
+  'details.openSteam': "Page Steam",
+  'details.price': "Prix",
+  'details.noClient': "Client Steam introuvable : les liens s’ouvrent dans le navigateur.",
+  'home.steam': "Populaire sur Steam",
+  'catalog.onSale': "En promo",
+  'preview.steamStatus': "Prix issus de l’instantané intégré. La version bureau actualise les prix pour votre région et détecte les jeux installés dans Steam.",
 }

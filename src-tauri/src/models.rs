@@ -87,8 +87,34 @@ pub struct Game {
     pub popularity: f64,
     pub requirements: Option<SystemRequirements>,
     pub package: Option<GamePackage>,
+    /// Set for games sold in an external store (Steam): bought and installed through its client.
+    #[serde(default)]
+    pub store: Option<StoreInfo>,
     pub created_at: String,
     pub updated_at: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StorePrice {
+    pub currency: String,
+    /// Minor units (cents / kopecks).
+    pub r#final: u64,
+    pub initial: u64,
+    pub discount_percent: u32,
+    pub final_formatted: String,
+    pub initial_formatted: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StoreInfo {
+    pub steam_app_id: u32,
+    pub is_free: bool,
+    pub price: Option<StorePrice>,
+    /// Installed in the local Steam client.
+    pub installed: bool,
+    pub client_available: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

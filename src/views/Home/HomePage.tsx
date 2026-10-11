@@ -39,6 +39,10 @@ export function HomePage() {
       recentlyUpdated: [...remote].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, ROW_SIZE),
       recentInstalls: fromLibrary('installedAt'),
       freetp: remote.filter((g) => g.sourceId === 'freetp').slice(0, ROW_SIZE),
+      steam: remote
+        .filter((g) => g.sourceId === 'steam')
+        .sort((a, b) => b.popularity - a.popularity)
+        .slice(0, ROW_SIZE),
     }
   }, [catalog, library])
 
@@ -95,6 +99,14 @@ export function HomePage() {
           <GameCard key={g.id} game={g} />
         ))}
       </SectionRow>
+
+      {rows.steam.length > 0 && (
+        <SectionRow title={t('home.steam')} href="/catalog?source=steam">
+          {rows.steam.map((g) => (
+            <GameCard key={g.id} game={g} />
+          ))}
+        </SectionRow>
+      )}
 
       <SectionRow title={t('home.recentlyAdded')} href="/catalog?sort=new">
         {rows.recentlyAdded.map((g) => (

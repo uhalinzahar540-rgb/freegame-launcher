@@ -9,6 +9,7 @@ import {
   RefreshCw,
   RotateCcw,
   ShieldCheck,
+  ShoppingCart,
   TriangleAlert,
 } from 'lucide-react'
 import { useNavigate } from 'react-router'
@@ -33,7 +34,7 @@ export function GameActionButton({
   const navigate = useNavigate()
   const state = useGameState(gameId)
   const [installOpen, setInstallOpen] = useState(false)
-  const { launch, pauseDownload, resumeDownload, retryDownload, startUpdate } = useLauncherStore.getState()
+  const { launch, openSteam, pauseDownload, resumeDownload, retryDownload, startUpdate } = useLauncherStore.getState()
   const { game, download, phase } = state
 
   const pct =
@@ -58,6 +59,23 @@ export function GameActionButton({
             title={t('action.externalHint')}
           >
             <ExternalLink aria-hidden /> {t('action.openPage')}
+          </Cta>
+        )
+      case 'store':
+        return (
+          <Cta
+            {...common}
+            variant="primary"
+            onClick={() => game?.store && openSteam(game.store.steamAppId, 'store')}
+            title={t('action.steamHint')}
+          >
+            <ShoppingCart aria-hidden /> {t('action.openSteam')}
+          </Cta>
+        )
+      case 'store-installed':
+        return (
+          <Cta {...common} variant="play" onClick={() => game?.store && openSteam(game.store.steamAppId, 'run')}>
+            <Play className="fill-current" aria-hidden /> {t('common.play')}
           </Cta>
         )
       case 'unavailable':

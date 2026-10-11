@@ -361,4 +361,16 @@ export const de: Messages = {
   'preview.localStatus': 'Spiele von der Festplatte hinzufügen funktioniert nur in der Desktop-Version.',
   'preview.freetpStatus':
     'Im Browser ist der Katalog nicht verfügbar (die Seite erlaubt kein CORS). Die Desktop-Version liest den öffentlichen RSS-Feed; Downloads über FreeTP werden nicht unterstützt.',
+  'action.openSteam': "In Steam öffnen",
+  'action.steamHint': "Kauf und Installation über den offiziellen Steam-Client",
+  'game.free': "Kostenlos",
+  'game.inSteam': "In Steam",
+  'details.steamNote': "Ein kostenpflichtiges Spiel aus Steam. Der Launcher zeigt den aktuellen Preis und öffnet es im offiziellen Steam-Client: Dort kaufen und installieren, dann hier mit „Spielen“ starten.",
+  'details.installViaSteam': "Über Steam installieren",
+  'details.openSteam': "Steam-Seite",
+  'details.price': "Preis",
+  'details.noClient': "Steam-Client nicht gefunden: Links werden im Browser geöffnet.",
+  'home.steam': "Beliebt auf Steam",
+  'catalog.onSale': "Im Angebot",
+  'preview.steamStatus': "Preise aus dem mitgelieferten Stand. Die Desktop-Version aktualisiert die Preise für deine Region und erkennt in Steam installierte Spiele.",
 }

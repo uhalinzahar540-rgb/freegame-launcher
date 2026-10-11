@@ -9,6 +9,7 @@ import type {
   PlayStats,
   Settings,
   SourceInfo,
+  SteamAction,
   UpdateInfo,
   VerifyReport,
 } from '@/types'
@@ -55,6 +56,8 @@ export interface Backend {
   pickExecutable(): Promise<string | null>
   openExternal(url: string): Promise<void>
   openPath(path: string): Promise<void>
+  /** Opens a Steam game in the official client, or its store page when the client is missing. */
+  openSteam(appId: number, action: SteamAction): Promise<void>
 
   onEvent(handler: (event: BackendEvent) => void): Promise<() => void>
 }

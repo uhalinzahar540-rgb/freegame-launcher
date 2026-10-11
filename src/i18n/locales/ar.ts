@@ -357,4 +357,16 @@ export const ar: Messages = {
   'preview.localStatus': 'إضافة الألعاب من القرص تعمل فقط في إصدار سطح المكتب.',
   'preview.freetpStatus':
     'الكتالوج غير متاح في المتصفح (الموقع لا يسمح بـ CORS). يقرأ إصدار سطح المكتب موجز RSS العام؛ التنزيل عبر FreeTP غير مدعوم.',
+  'action.openSteam': "فتح في Steam",
+  'action.steamHint': "الشراء والتثبيت عبر عميل Steam الرسمي",
+  'game.free': "مجانية",
+  'game.inSteam': "في Steam",
+  'details.steamNote': "لعبة مدفوعة تُباع على Steam. يعرض المشغّل سعرها الحالي ويفتحها في عميل Steam الرسمي: اشترها وثبّتها هناك، ثم شغّلها من هنا عبر زر اللعب.",
+  'details.installViaSteam': "التثبيت عبر Steam",
+  'details.openSteam': "صفحة Steam",
+  'details.price': "السعر",
+  'details.noClient': "لم يتم العثور على عميل Steam: ستُفتح الروابط في المتصفح.",
+  'home.steam': "الأكثر شعبية على Steam",
+  'catalog.onSale': "بخصم",
+  'preview.steamStatus': "الأسعار من لقطة مضمّنة. يحدّث إصدار سطح المكتب الأسعار لمنطقتك ويكتشف الألعاب المثبتة في Steam.",
 }

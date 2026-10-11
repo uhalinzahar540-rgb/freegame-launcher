@@ -1,7 +1,7 @@
 import type { LanguageCode } from '@/i18n'
 import type { ThemeId } from '@/lib/themes'
 
-export type SourceKind = 'http' | 'local' | 'freetp'
+export type SourceKind = 'http' | 'local' | 'freetp' | 'store'
 
 export type SourceStatus = 'online' | 'limited' | 'offline' | 'error' | 'disabled' | 'unknown'
 
@@ -63,9 +63,32 @@ export interface Game {
   popularity: number
   requirements: SystemRequirements | null
   package: GamePackage | null
+  /** Set for games sold in Steam: bought and installed through the official client. */
+  store?: StoreInfo | null
   createdAt: string
   updatedAt: string
 }
+
+export interface StorePrice {
+  currency: string
+  /** Minor units (cents / kopecks). */
+  final: number
+  initial: number
+  discountPercent: number
+  finalFormatted: string
+  initialFormatted: string
+}
+
+export interface StoreInfo {
+  steamAppId: number
+  isFree: boolean
+  price: StorePrice | null
+  /** Installed in the local Steam client. */
+  installed: boolean
+  clientAvailable: boolean
+}
+
+export type SteamAction = 'store' | 'install' | 'run'
 
 export interface Installation {
   gameId: string

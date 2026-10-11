@@ -2,6 +2,7 @@ import { Gamepad2 } from 'lucide-react'
 import { motion } from 'motion/react'
 import { Link } from 'react-router'
 import { GameActionButton } from '@/components/GameActionButton'
+import { PriceTag } from '@/components/PriceTag'
 import { Badge } from '@/components/ui/primitives'
 import { useT } from '@/i18n'
 import { sourceLabel, useGameState } from '@/lib/game-state'
@@ -62,7 +63,9 @@ export function GameCard({ game, className }: { game: Game; className?: string }
           <Badge className={COVER_BADGE}>{sourceLabel(game.sourceId)}</Badge>
           {installed && <Badge className={COVER_BADGE}>{t('game.installed')}</Badge>}
           {phase === 'update' && <Badge className={COVER_BADGE}>{t('game.updateBadge')}</Badge>}
+          {phase === 'store-installed' && <Badge className={COVER_BADGE}>{t('game.inSteam')}</Badge>}
         </div>
+        {game.store && <PriceTag store={game.store} className="absolute end-2 bottom-2" />}
         <span className="sr-only">{t('game.openPage', { title: game.title })}</span>
       </Link>
       <div className="flex flex-1 flex-col gap-3 p-4 pt-1">

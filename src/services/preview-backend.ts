@@ -1,7 +1,7 @@
 import { detectLanguage, isLanguageCode, t } from '@/i18n'
 import { isThemeId } from '@/lib/themes'
 import { DesktopOnlyError, type Backend } from './backend'
-import type { Game, GamePackage, Settings, SourceInfo, SystemRequirements } from '@/types'
+import type { Game, GamePackage, Settings, SourceInfo, StorePrice, SystemRequirements } from '@/types'
 
 interface CatalogFileGame {
   slug: string
@@ -26,6 +26,56 @@ interface CatalogFile {
   updatedAt: string
   games: CatalogFileGame[]
 }
+
+interface SteamFileGame {
+  appId: number
+  slug: string
+  title: string
+  developer: string | null
+  releaseDate: string | null
+  popularity: number
+  coverUrl: string | null
+  heroUrl: string | null
+  screenshots: string[]
+  requirements: SystemRequirements | null
+  isFree: boolean
+  price: StorePrice | null
+  i18n: Record<string, { shortDescription: string; description: string; genres: string[] }>
+}
+
+interface SteamFile {
+  updatedAt: string
+  games: SteamFileGame[]
+}
+
+function steamGame(g: SteamFileGame, language: string, catalogDate: string): Game {
+  const text = g.i18n[language]?.shortDescription ? g.i18n[language] : g.i18n.en
+  const date = g.releaseDate ? `${g.releaseDate}T00:00:00Z` : catalogDate
+  return {
+    id: `steam:${g.appId}`,
+    sourceId: 'steam',
+    slug: g.slug,
+    title: g.title,
+    developer: g.developer,
+    shortDescription: text?.shortDescription ?? '',
+    description: text?.description ?? '',
+    genres: text?.genres ?? [],
+    coverUrl: g.coverUrl,
+    heroUrl: g.heroUrl ?? g.coverUrl,
+    screenshots: g.screenshots,
+    pageUrl: steamPage(g.appId),
+    license: null,
+    releaseDate: g.releaseDate,
+    popularity: g.popularity,
+    requirements: g.requirements,
+    package: null,
+    store: { steamAppId: g.appId, isFree: g.isFree, price: g.price, installed: false, clientAvailable: false },
+    createdAt: date,
+    updatedAt: date,
+  }
+}
+
+const steamPage = (appId: number) => `https://store.steampowered.com/app/${appId}/`
 
 const DEFAULT_SETTINGS: Settings = {
   launchOnStartup: false,
@@ -88,7 +138,18 @@ export function createPreviewBackend(appVersion: string): Backend {
   let settings: Settings = { ...DEFAULT_SETTINGS, ...loadPreviewPrefs() }
   let catalogCache: Game[] | null = null
   let catalogError: string | null = null
-  const enabled: Record<string, boolean> = { opensource: true, local: true, freetp: true }
+  const enabled: Record<string, boolean> = { opensource: true, local: true, freetp: true, steam: true }
+  let steamFile: SteamFile | null = null
+
+  async function loadSteam(): Promise<Game[]> {
+    if (!steamFile) {
+      const res = await fetch('/catalog/steam.json')
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      steamFile = (await res.json()) as SteamFile
+    }
+    const file = steamFile
+    return file.games.map((g) => steamGame(g, settings.language, file.updatedAt))
+  }
 
   async function loadCatalog(): Promise<Game[]> {
     if (catalogCache) return catalogCache
@@ -166,6 +227,18 @@ export function createPreviewBackend(appVersion: string): Backend {
         gameCount: 0,
         capabilities: { search: true, metadata: true, autoInstall: false, openPage: true, updates: false },
       },
+      {
+        id: 'steam',
+        name: 'Steam',
+        kind: 'store',
+        homepage: 'https://store.steampowered.com/',
+        enabled: enabled.steam,
+        status: enabled.steam ? 'limited' : 'disabled',
+        statusMessage: t('preview.steamStatus'),
+        lastSync: null,
+        gameCount: enabled.steam ? (steamFile?.games.length ?? 0) : 0,
+        capabilities: { search: true, metadata: true, autoInstall: false, openPage: true, updates: false },
+      },
     ]
   }
 
@@ -176,11 +249,14 @@ export function createPreviewBackend(appVersion: string): Backend {
     appVersion,
 
     async getCatalog() {
-      if (!enabled.opensource) return []
-      return loadCatalog()
+      const [open, steam] = await Promise.all([
+        enabled.opensource ? loadCatalog() : Promise.resolve([]),
+        enabled.steam ? loadSteam().catch(() => []) : Promise.resolve([]),
+      ])
+      return [...open, ...steam]
     },
     async getSources() {
-      await loadCatalog().catch(() => undefined)
+      await Promise.all([loadCatalog().catch(() => undefined), loadSteam().catch(() => undefined)])
       return sources()
     },
     async setSourceEnabled(sourceId, value) {
@@ -241,6 +317,9 @@ export function createPreviewBackend(appVersion: string): Backend {
       window.open(url, '_blank', 'noopener,noreferrer')
     },
     openPath: desktopOnly('openPath'),
+    async openSteam(appId) {
+      window.open(steamPage(appId), '_blank', 'noopener,noreferrer')
+    },
 
     onEvent: async () => () => undefined,
   }
