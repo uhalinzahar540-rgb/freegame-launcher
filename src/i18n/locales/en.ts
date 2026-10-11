@@ -265,7 +265,7 @@ export const en = {
   'library.emptyTitle': 'The library is empty',
   'library.emptyDesktop': 'Install a game from the catalog or add an installed one by selecting its .exe file.',
   'library.emptyPreview':
-    'The library is stored in the desktop app’s SQLite database and is not available in the browser preview.',
+    'The library is stored by the desktop app on your computer and is not available in the browser preview.',
   'library.manual': 'Added manually',
   'library.filesMissing': 'Files not found',
   'library.lastLaunch': 'Launched: {when}',

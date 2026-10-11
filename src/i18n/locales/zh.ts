@@ -260,7 +260,7 @@ export const zh: Messages = {
   'library.favorites': '收藏',
   'library.emptyTitle': '游戏库为空',
   'library.emptyDesktop': '从目录安装游戏，或选择 .exe 文件添加已安装的游戏。',
-  'library.emptyPreview': '游戏库存储在桌面应用的 SQLite 数据库中，浏览器预览中不可用。',
+  'library.emptyPreview': '游戏库由桌面应用保存在你的电脑上，浏览器预览中不可用。',
   'library.manual': '手动添加',
   'library.filesMissing': '文件未找到',
   'library.lastLaunch': '启动：{when}',

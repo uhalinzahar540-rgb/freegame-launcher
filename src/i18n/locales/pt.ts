@@ -265,7 +265,7 @@ export const pt: Messages = {
   'library.favorites': 'Favoritos',
   'library.emptyTitle': 'A biblioteca está vazia',
   'library.emptyDesktop': 'Instale um jogo do catálogo ou adicione um já instalado selecionando seu arquivo .exe.',
-  'library.emptyPreview': 'A biblioteca fica no banco SQLite do app desktop e não está disponível na prévia do navegador.',
+  'library.emptyPreview': 'A biblioteca é salva pelo app desktop no seu computador e não está disponível na prévia do navegador.',
   'library.manual': 'Adicionado manualmente',
   'library.filesMissing': 'Arquivos não encontrados',
   'library.lastLaunch': 'Iniciado: {when}',

@@ -267,7 +267,7 @@ export const es: Messages = {
   'library.emptyTitle': 'La biblioteca está vacía',
   'library.emptyDesktop': 'Instala un juego del catálogo o añade uno ya instalado seleccionando su archivo .exe.',
   'library.emptyPreview':
-    'La biblioteca se guarda en la base SQLite de la app de escritorio y no está disponible en la vista previa.',
+    'La biblioteca la guarda la app de escritorio en tu equipo y no está disponible en la vista previa.',
   'library.manual': 'Añadido manualmente',
   'library.filesMissing': 'Archivos no encontrados',
   'library.lastLaunch': 'Iniciado: {when}',

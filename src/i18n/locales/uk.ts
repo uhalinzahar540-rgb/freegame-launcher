@@ -265,7 +265,7 @@ export const uk: Messages = {
   'library.favorites': 'Обране',
   'library.emptyTitle': 'Бібліотека порожня',
   'library.emptyDesktop': 'Встановіть гру з каталогу або додайте вже встановлену, вказавши її .exe-файл.',
-  'library.emptyPreview': 'Бібліотека зберігається в SQLite десктопного застосунку й недоступна в браузерному перегляді.',
+  'library.emptyPreview': 'Бібліотека зберігається десктопним застосунком на комп’ютері й недоступна в браузерному перегляді.',
   'library.manual': 'Додано вручну',
   'library.filesMissing': 'Файли не знайдено',
   'library.lastLaunch': 'Запуск: {when}',

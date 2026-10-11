@@ -264,7 +264,7 @@ export const ko: Messages = {
   'library.favorites': '즐겨찾기',
   'library.emptyTitle': '라이브러리가 비어 있습니다',
   'library.emptyDesktop': '카탈로그에서 게임을 설치하거나 .exe 파일을 선택해 설치된 게임을 추가하세요.',
-  'library.emptyPreview': '라이브러리는 데스크톱 앱의 SQLite에 저장되므로 브라우저 미리보기에서는 사용할 수 없습니다.',
+  'library.emptyPreview': '라이브러리는 데스크톱 앱이 컴퓨터에 저장하므로 브라우저 미리보기에서는 사용할 수 없습니다.',
   'library.manual': '직접 추가함',
   'library.filesMissing': '파일 없음',
   'library.lastLaunch': '실행: {when}',

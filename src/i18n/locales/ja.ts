@@ -265,7 +265,7 @@ export const ja: Messages = {
   'library.favorites': 'お気に入り',
   'library.emptyTitle': 'ライブラリは空です',
   'library.emptyDesktop': 'カタログからゲームをインストールするか、.exe ファイルを選んでインストール済みのゲームを追加してください。',
-  'library.emptyPreview': 'ライブラリはデスクトップアプリの SQLite に保存されるため、ブラウザープレビューでは利用できません。',
+  'library.emptyPreview': 'ライブラリはデスクトップアプリがコンピューターに保存するため、ブラウザープレビューでは利用できません。',
   'library.manual': '手動で追加',
   'library.filesMissing': 'ファイルが見つかりません',
   'library.lastLaunch': '起動：{when}',

@@ -268,7 +268,7 @@ export const fr: Messages = {
   'library.emptyTitle': 'La bibliothèque est vide',
   'library.emptyDesktop': 'Installez un jeu depuis le catalogue ou ajoutez-en un déjà installé en sélectionnant son fichier .exe.',
   'library.emptyPreview':
-    'La bibliothèque est stockée dans la base SQLite de l’application de bureau et n’est pas disponible dans l’aperçu.',
+    'La bibliothèque est enregistrée par l’application de bureau sur votre ordinateur et n’est pas disponible dans l’aperçu.',
   'library.manual': 'Ajouté manuellement',
   'library.filesMissing': 'Fichiers introuvables',
   'library.lastLaunch': 'Lancé : {when}',

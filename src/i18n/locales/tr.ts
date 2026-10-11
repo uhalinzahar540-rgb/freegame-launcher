@@ -265,7 +265,7 @@ export const tr: Messages = {
   'library.favorites': 'Favoriler',
   'library.emptyTitle': 'Kitaplık boş',
   'library.emptyDesktop': 'Katalogdan bir oyun yükleyin veya .exe dosyasını seçerek yüklü bir oyun ekleyin.',
-  'library.emptyPreview': 'Kitaplık masaüstü uygulamasının SQLite veritabanında saklanır ve tarayıcı önizlemesinde kullanılamaz.',
+  'library.emptyPreview': 'Kitaplık masaüstü uygulaması tarafından bilgisayarınızda saklanır ve tarayıcı önizlemesinde kullanılamaz.',
   'library.manual': 'Elle eklendi',
   'library.filesMissing': 'Dosyalar bulunamadı',
   'library.lastLaunch': 'Başlatıldı: {when}',

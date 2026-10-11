@@ -264,7 +264,7 @@ export const ar: Messages = {
   'library.favorites': 'المفضلة',
   'library.emptyTitle': 'المكتبة فارغة',
   'library.emptyDesktop': 'ثبّت لعبة من الكتالوج أو أضف لعبة مثبّتة باختيار ملف .exe الخاص بها.',
-  'library.emptyPreview': 'تُخزَّن المكتبة في قاعدة SQLite لتطبيق سطح المكتب وهي غير متاحة في معاينة المتصفح.',
+  'library.emptyPreview': 'يحفظ تطبيق سطح المكتب المكتبة على جهازك، وهي غير متاحة في معاينة المتصفح.',
   'library.manual': 'أُضيفت يدويًا',
   'library.filesMissing': 'الملفات غير موجودة',
   'library.lastLaunch': 'آخر تشغيل: {when}',

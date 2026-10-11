@@ -265,7 +265,7 @@ export const hi: Messages = {
   'library.favorites': 'पसंदीदा',
   'library.emptyTitle': 'लाइब्रेरी ख़ाली है',
   'library.emptyDesktop': 'कैटलॉग से गेम इंस्टॉल करें या उसकी .exe फ़ाइल चुनकर पहले से इंस्टॉल गेम जोड़ें।',
-  'library.emptyPreview': 'लाइब्रेरी डेस्कटॉप ऐप के SQLite में संग्रहीत है और ब्राउज़र पूर्वावलोकन में उपलब्ध नहीं है।',
+  'library.emptyPreview': 'लाइब्रेरी को डेस्कटॉप ऐप आपके कंप्यूटर पर सहेजता है और यह ब्राउज़र पूर्वावलोकन में उपलब्ध नहीं है।',
   'library.manual': 'हाथ से जोड़ा गया',
   'library.filesMissing': 'फ़ाइलें नहीं मिलीं',
   'library.lastLaunch': 'शुरू किया: {when}',

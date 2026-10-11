@@ -49,7 +49,7 @@ const DEFAULT_SETTINGS: Settings = {
 }
 
 /**
- * The desktop build keeps settings in SQLite. In the browser preview there is no
+ * The desktop build keeps settings in its JSON state file. In the browser preview there is no
  * database, so only the visual preferences chosen in the welcome wizard are kept
  * in localStorage — otherwise the wizard would reappear on every reload.
  */

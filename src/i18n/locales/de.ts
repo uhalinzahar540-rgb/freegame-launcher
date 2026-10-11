@@ -266,7 +266,7 @@ export const de: Messages = {
   'library.emptyTitle': 'Die Bibliothek ist leer',
   'library.emptyDesktop': 'Installiere ein Spiel aus dem Katalog oder füge ein bereits installiertes über seine .exe-Datei hinzu.',
   'library.emptyPreview':
-    'Die Bibliothek liegt in der SQLite-Datenbank der Desktop-App und ist in der Browser-Vorschau nicht verfügbar.',
+    'Die Bibliothek wird von der Desktop-App auf deinem Computer gespeichert und ist in der Browser-Vorschau nicht verfügbar.',
   'library.manual': 'Manuell hinzugefügt',
   'library.filesMissing': 'Dateien nicht gefunden',
   'library.lastLaunch': 'Gestartet: {when}',
