@@ -10,6 +10,8 @@ import type {
   Settings,
   SourceInfo,
   SteamAction,
+  SteamBrowseParams,
+  SteamPage,
   UpdateInfo,
   VerifyReport,
 } from '@/types'
@@ -58,6 +60,10 @@ export interface Backend {
   openPath(path: string): Promise<void>
   /** Opens a Steam game in the official client, or its store page when the client is missing. */
   openSteam(appId: number, action: SteamAction): Promise<void>
+  /** Searches the full Steam store catalog, one page at a time. */
+  browseSteam(params: SteamBrowseParams): Promise<SteamPage>
+  /** Full, localized store data for one Steam game. */
+  getSteamGame(appId: number): Promise<Game>
 
   onEvent(handler: (event: BackendEvent) => void): Promise<() => void>
 }

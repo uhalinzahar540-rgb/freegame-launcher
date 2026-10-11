@@ -280,3 +280,350 @@ mod tests {
         assert_eq!(paths, vec![PathBuf::from("C:\\Program Files (x86)\\Steam"), PathBuf::from("D:\\SteamLibrary")]);
     }
 }
+
+/// One page of the full Steam store catalog (every game, not just the bundled list).
+#[derive(Debug, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SteamPage {
+    pub total: u32,
+    pub games: Vec<Game>,
+}
+
+pub const BROWSE_PAGE: u32 = 48;
+const STEAM_CDN: &str = "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/";
+
+fn steam_language(lang: &str) -> &'static str {
+    match lang {
+        "ru" => "russian",
+        "uk" => "ukrainian",
+        "de" => "german",
+        "fr" => "french",
+        "es" => "spanish",
+        "pt" => "brazilian",
+        "tr" => "turkish",
+        "zh" => "schinese",
+        "ja" => "japanese",
+        "ko" => "koreana",
+        "ar" => "arabic",
+        _ => "english",
+    }
+}
+
+fn sort_param(sort: &str) -> &'static str {
+    match sort {
+        "title" => "Name_ASC",
+        "new" => "Released_DESC",
+        "reviews" => "Reviews_DESC",
+        "price" => "Price_ASC",
+        _ => "",
+    }
+}
+
+fn between<'a>(haystack: &'a str, start: &str, end: &str) -> Option<&'a str> {
+    let from = haystack.find(start)? + start.len();
+    let len = haystack[from..].find(end)?;
+    Some(&haystack[from..from + len])
+}
+
+fn unescape(text: &str) -> String {
+    text.replace("&quot;", "\"")
+        .replace("&#39;", "'")
+        .replace("&apos;", "'")
+        .replace("&lt;", "<")
+        .replace("&gt;", ">")
+        .replace("&nbsp;", " ")
+        .replace("&amp;", "&")
+}
+
+/// `30 Oct, 2025` / `Oct 30, 2025` (English store format) -> `2025-10-30`.
+pub fn parse_english_date(text: &str) -> Option<String> {
+    const MONTHS: [&str; 12] = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+    let parts: Vec<&str> = text.split(|c: char| c == ' ' || c == ',').filter(|p| !p.is_empty()).collect();
+    if parts.len() != 3 {
+        return None;
+    }
+    let month_of = |p: &str| {
+        let p = p.to_ascii_lowercase();
+        MONTHS.iter().position(|m| p.starts_with(m)).map(|i| i + 1)
+    };
+    let (day, month) = match (parts[0].parse::<u32>().ok(), month_of(parts[1]), month_of(parts[0]), parts[1].parse::<u32>().ok()) {
+        (Some(d), Some(m), _, _) => (d, m),
+        (_, _, Some(m), Some(d)) => (d, m),
+        _ => return None,
+    };
+    let year: u32 = parts[2].parse().ok()?;
+    (1..=31).contains(&day).then(|| format!("{year:04}-{month:02}-{day:02}"))
+}
+
+fn strip_tags(html: &str) -> String {
+    let spaced = html.replace("<br>", "\n").replace("<br/>", "\n").replace("<br />", "\n").replace("</p>", "\n").replace("</li>", "\n");
+    let mut out = String::with_capacity(spaced.len());
+    let mut in_tag = false;
+    for c in spaced.chars() {
+        match c {
+            '<' => in_tag = true,
+            '>' => in_tag = false,
+            _ if !in_tag => out.push(c),
+            _ => {}
+        }
+    }
+    let text = unescape(&out);
+    let mut lines: Vec<&str> = text.lines().map(str::trim).collect();
+    lines.dedup_by(|a, b| a.is_empty() && b.is_empty());
+    lines.join("\n").trim().to_string()
+}
+
+fn price_from_row(row: &str) -> (bool, Option<StorePrice>) {
+    let final_minor: u64 = between(row, "data-price-final=\"", "\"").and_then(|v| v.parse().ok()).unwrap_or(0);
+    // Free games render as `<div class="discount_final_price free">Free</div>`.
+    let final_text = between(row, "discount_final_price", "</div>")
+        .and_then(|s| s.split_once('>'))
+        .map(|(_, text)| unescape(text.trim()))
+        .unwrap_or_default();
+    if final_text.is_empty() {
+        return (false, None);
+    }
+    if final_minor == 0 {
+        return (true, None);
+    }
+    let discount: u32 = between(row, "data-discount=\"", "\"").and_then(|v| v.parse().ok()).unwrap_or(0);
+    let original = between(row, "discount_original_price\">", "</div>").map(|s| unescape(s.trim()));
+    let initial = if discount > 0 && discount < 100 {
+        (final_minor as f64 * 100.0 / (100 - discount) as f64).round() as u64
+    } else {
+        final_minor
+    };
+    (
+        false,
+        Some(StorePrice {
+            currency: String::new(),
+            r#final: final_minor,
+            initial,
+            discount_percent: discount,
+            initial_formatted: original.unwrap_or_else(|| final_text.clone()),
+            final_formatted: final_text,
+        }),
+    )
+}
+
+pub fn parse_search_html(html: &str, start: u32, local: &Local) -> Vec<Game> {
+    let now = "1970-01-01T00:00:00Z".to_string();
+    html.split("<a href=")
+        .skip(1)
+        .enumerate()
+        .filter_map(|(index, row)| {
+            let app_id: u32 = between(row, "data-ds-appid=\"", "\"")?.split(',').next()?.parse().ok()?;
+            let title = unescape(between(row, "<span class=\"title\">", "</span>")?.trim());
+            let release_date = between(row, "search_released responsive_secondrow\">", "</div>").and_then(|d| parse_english_date(d.trim()));
+            // Row capsules sit in hashed folders where `header.jpg` is missing; the unhashed path always resolves.
+            let header = Some(format!("{STEAM_CDN}{app_id}/header.jpg"));
+            let (is_free, price) = price_from_row(row);
+            let date = release_date.as_ref().map(|d| format!("{d}T00:00:00Z")).unwrap_or_else(|| now.clone());
+            Some(Game {
+                id: format!("steam:{app_id}"),
+                source_id: "steam".into(),
+                slug: app_id.to_string(),
+                title,
+                developer: None,
+                short_description: String::new(),
+                description: String::new(),
+                genres: Vec::new(),
+                cover_url: header.clone(),
+                hero_url: header,
+                screenshots: Vec::new(),
+                page_url: Some(store_page(app_id)),
+                license: None,
+                release_date,
+                popularity: 1_000_000f64 - f64::from(start) - index as f64,
+                requirements: None,
+                package: None,
+                store: Some(StoreInfo {
+                    steam_app_id: app_id,
+                    is_free,
+                    price,
+                    installed: local.installed.contains(&app_id),
+                    client_available: local.client_available,
+                }),
+                created_at: date.clone(),
+                updated_at: date,
+            })
+        })
+        .collect()
+}
+
+pub async fn browse(
+    http: &reqwest::Client,
+    query: &str,
+    start: u32,
+    sort: &str,
+    on_sale: bool,
+    region: &str,
+) -> Result<SteamPage, String> {
+    #[derive(Deserialize)]
+    struct SearchResponse {
+        total_count: u32,
+        results_html: String,
+    }
+
+    let mut params: Vec<(&str, String)> = vec![
+        ("start", start.to_string()),
+        ("count", BROWSE_PAGE.to_string()),
+        ("category1", "998".into()),
+        ("infinite", "1".into()),
+        ("json", "1".into()),
+        ("cc", region.to_string()),
+        ("l", "english".into()),
+        ("ndl", "1".into()),
+    ];
+    if !query.trim().is_empty() {
+        params.push(("term", query.trim().to_string()));
+    }
+    let sort = sort_param(sort);
+    if !sort.is_empty() {
+        params.push(("sort_by", sort.into()));
+    }
+    if on_sale {
+        params.push(("specials", "1".into()));
+    }
+    let resp = http
+        .get(format!("{STEAM_HOME}search/results/"))
+        .query(&params)
+        .send()
+        .await
+        .map_err(|e| crate::app::network_error(&e))?;
+    if !resp.status().is_success() {
+        return Err(format!("Steam: HTTP {}", resp.status().as_u16()));
+    }
+    let body: SearchResponse = resp.json().await.map_err(|e| format!("Steam: {e}"))?;
+    Ok(SteamPage { total: body.total_count, games: parse_search_html(&body.results_html, start, &scan_local()) })
+}
+
+/// Full store data for a single game, localized to the launcher language.
+pub async fn details(http: &reqwest::Client, app_id: u32, region: &str, lang: &str) -> Result<Game, String> {
+    #[derive(Deserialize)]
+    struct Named {
+        description: String,
+    }
+    #[derive(Deserialize)]
+    struct Shot {
+        path_full: String,
+    }
+    #[derive(Deserialize)]
+    struct Overview {
+        initial: u64,
+        r#final: u64,
+        discount_percent: u32,
+        currency: String,
+        initial_formatted: String,
+        final_formatted: String,
+    }
+    #[derive(Deserialize)]
+    struct Data {
+        name: String,
+        #[serde(default)]
+        is_free: bool,
+        #[serde(default)]
+        short_description: String,
+        #[serde(default)]
+        about_the_game: String,
+        #[serde(default)]
+        developers: Vec<String>,
+        #[serde(default)]
+        genres: Vec<Named>,
+        header_image: Option<String>,
+        #[serde(default)]
+        screenshots: Vec<Shot>,
+        price_overview: Option<Overview>,
+    }
+    #[derive(Deserialize)]
+    struct Entry {
+        success: bool,
+        data: Option<Data>,
+    }
+
+    let url = format!("{STEAM_HOME}api/appdetails?appids={app_id}&cc={region}&l={}", steam_language(lang));
+    let resp = http.get(&url).send().await.map_err(|e| crate::app::network_error(&e))?;
+    if !resp.status().is_success() {
+        return Err(format!("Steam: HTTP {}", resp.status().as_u16()));
+    }
+    let mut body: HashMap<String, Entry> = resp.json().await.map_err(|e| format!("Steam: {e}"))?;
+    let data = body
+        .remove(&app_id.to_string())
+        .filter(|e| e.success)
+        .and_then(|e| e.data)
+        .ok_or_else(|| format!("Steam: app {app_id} not found"))?;
+    let local = scan_local();
+    let now = "1970-01-01T00:00:00Z".to_string();
+    Ok(Game {
+        id: format!("steam:{app_id}"),
+        source_id: "steam".into(),
+        slug: app_id.to_string(),
+        title: data.name,
+        developer: data.developers.into_iter().next(),
+        short_description: unescape(&data.short_description),
+        description: strip_tags(&data.about_the_game),
+        genres: data.genres.into_iter().map(|g| g.description).collect(),
+        cover_url: data.header_image.clone(),
+        hero_url: data.screenshots.first().map(|s| s.path_full.clone()).or(data.header_image),
+        screenshots: data.screenshots.into_iter().take(8).map(|s| s.path_full).collect(),
+        page_url: Some(store_page(app_id)),
+        license: None,
+        release_date: None,
+        popularity: 0.0,
+        requirements: None,
+        package: None,
+        store: Some(StoreInfo {
+            steam_app_id: app_id,
+            is_free: data.is_free,
+            price: data.price_overview.map(|o| StorePrice {
+                currency: o.currency,
+                r#final: o.r#final,
+                initial: o.initial,
+                discount_percent: o.discount_percent,
+                initial_formatted: if o.initial_formatted.is_empty() { o.final_formatted.clone() } else { o.initial_formatted },
+                final_formatted: o.final_formatted,
+            }),
+            installed: local.installed.contains(&app_id),
+            client_available: local.client_available,
+        }),
+        created_at: now.clone(),
+        updated_at: now,
+    })
+}
+
+#[cfg(test)]
+mod browse_tests {
+    use super::*;
+
+    #[test]
+    fn parses_store_dates() {
+        assert_eq!(parse_english_date("30 Oct, 2025").as_deref(), Some("2025-10-30"));
+        assert_eq!(parse_english_date("Jul 9, 2013").as_deref(), Some("2013-07-09"));
+        assert_eq!(parse_english_date("Coming soon"), None);
+    }
+
+    #[test]
+    fn parses_search_rows() {
+        let html = r#"<!-- x --><a href="https://store.steampowered.com/app/1/X/" data-ds-appid="1808500" class="search_result_row">
+<div class="search_capsule"><img src="https://cdn/apps/1808500/capsule_231x87.jpg?t=1" ></div>
+<span class="title">ARC Raiders &amp; Co</span>
+<div class="search_released responsive_secondrow">
+  30 Oct, 2025 </div>
+<div class="search_price_discount_combined responsive_secondrow" data-price-final="161000">
+<div class="discount_block search_discount_block" data-price-final="161000" data-discount="50"><div class="discount_original_price">3220 руб</div><div class="discount_final_price">1610 руб</div></div></div>
+</a><a href="https://store.steampowered.com/app/570/" data-ds-appid="570" class="row"><img src="https://cdn/apps/570/capsule_231x87.jpg" ><span class="title">Dota 2</span>
+<div class="search_released responsive_secondrow">9 Jul, 2013</div><div data-price-final="0"><div class="discount_block no_discount"><div class="discount_final_price free">Free</div></div></div></a>"#;
+        let local = Local { installed: HashSet::from([570]), client_available: true };
+        let games = parse_search_html(html, 0, &local);
+        assert_eq!(games.len(), 2);
+        assert_eq!(games[0].title, "ARC Raiders & Co");
+        assert_eq!(games[0].release_date.as_deref(), Some("2025-10-30"));
+        assert_eq!(games[0].cover_url.as_deref(), Some(format!("{STEAM_CDN}1808500/header.jpg").as_str()));
+        let price = games[0].store.as_ref().unwrap().price.as_ref().unwrap();
+        assert_eq!((price.r#final, price.initial, price.discount_percent), (161000, 322000, 50));
+        assert_eq!(price.initial_formatted, "3220 руб");
+        let dota = games[1].store.as_ref().unwrap();
+        assert!(dota.is_free && dota.price.is_none() && dota.installed);
+        assert!(games[0].popularity > games[1].popularity);
+    }
+}

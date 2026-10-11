@@ -317,6 +317,26 @@ export function createPreviewBackend(appVersion: string): Backend {
       window.open(url, '_blank', 'noopener,noreferrer')
     },
     openPath: desktopOnly('openPath'),
+    // The Steam store API has no CORS headers, so the browser preview searches the bundled snapshot.
+    async browseSteam({ query, start, sort, onSale }) {
+      const q = query.trim().toLowerCase()
+      const all = (await loadSteam()).filter(
+        (g) =>
+          (!q || g.title.toLowerCase().includes(q) || (g.developer ?? '').toLowerCase().includes(q)) &&
+          (!onSale || (g.store?.price?.discountPercent ?? 0) > 0),
+      )
+      const priceOf = (g: Game) => g.store?.price?.final ?? 0
+      if (sort === 'title') all.sort((a, b) => a.title.localeCompare(b.title))
+      else if (sort === 'new') all.sort((a, b) => (b.releaseDate ?? '').localeCompare(a.releaseDate ?? ''))
+      else if (sort === 'price') all.sort((a, b) => priceOf(a) - priceOf(b))
+      else all.sort((a, b) => b.popularity - a.popularity)
+      return { total: all.length, games: all.slice(start, start + 48) }
+    },
+    async getSteamGame(appId) {
+      const game = (await loadSteam()).find((g) => g.store?.steamAppId === appId)
+      if (!game) throw new Error(t('details.notFound'))
+      return game
+    },
     async openSteam(appId) {
       window.open(steamPage(appId), '_blank', 'noopener,noreferrer')
     },

@@ -372,4 +372,10 @@ export const ru: Messages = {
   'home.steam': "Популярное в Steam",
   'catalog.onSale': "Со скидкой",
   'preview.steamStatus': "Цены из встроенного снимка. Десктопная версия обновляет цены для вашего региона и находит игры, установленные в Steam.",
+  'catalog.steamAll': "Весь Steam",
+  'catalog.steamCount': "Игр: {count}",
+  'catalog.steamError': "Не удалось загрузить Steam: {error}",
+  'catalog.retry': "Повторить",
+  'catalog.steamEnd': "Это весь список.",
+  'catalog.localGames': "Игры лаунчера",
 }

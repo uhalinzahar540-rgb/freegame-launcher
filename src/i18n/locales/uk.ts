@@ -371,4 +371,10 @@ export const uk: Messages = {
   'home.steam': "Популярне в Steam",
   'catalog.onSale': "Зі знижкою",
   'preview.steamStatus': "Ціни з вбудованого знімка. Десктопна версія оновлює ціни для вашого регіону та знаходить ігри, встановлені в Steam.",
+  'catalog.steamAll': "Увесь Steam",
+  'catalog.steamCount': "Ігор: {count}",
+  'catalog.steamError': "Не вдалося завантажити Steam: {error}",
+  'catalog.retry': "Повторити",
+  'catalog.steamEnd': "Це весь список.",
+  'catalog.localGames': "Ігри лаунчера",
 }

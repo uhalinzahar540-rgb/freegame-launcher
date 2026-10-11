@@ -369,4 +369,10 @@ export const ko: Messages = {
   'home.steam': "Steam 인기 게임",
   'catalog.onSale': "할인 중",
   'preview.steamStatus': "가격은 내장 스냅샷 기준입니다. 데스크톱 버전은 지역 가격을 갱신하고 Steam에 설치된 게임을 감지합니다.",
+  'catalog.steamAll': "Steam 전체",
+  'catalog.steamCount': "게임 {count}개",
+  'catalog.steamError': "Steam을 불러오지 못했습니다: {error}",
+  'catalog.retry': "다시 시도",
+  'catalog.steamEnd': "목록의 끝입니다.",
+  'catalog.localGames': "런처 게임",
 }

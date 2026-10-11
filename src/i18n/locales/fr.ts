@@ -375,4 +375,10 @@ export const fr: Messages = {
   'home.steam': "Populaire sur Steam",
   'catalog.onSale': "En promo",
   'preview.steamStatus': "Prix issus de l’instantané intégré. La version bureau actualise les prix pour votre région et détecte les jeux installés dans Steam.",
+  'catalog.steamAll': "Tout Steam",
+  'catalog.steamCount': "{count} jeux",
+  'catalog.steamError': "Impossible de charger Steam : {error}",
+  'catalog.retry': "Réessayer",
+  'catalog.steamEnd': "C’est toute la liste.",
+  'catalog.localGames': "Jeux du lanceur",
 }

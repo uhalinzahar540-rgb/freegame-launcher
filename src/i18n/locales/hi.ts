@@ -370,4 +370,10 @@ export const hi: Messages = {
   'home.steam': "Steam पर लोकप्रिय",
   'catalog.onSale': "सेल में",
   'preview.steamStatus': "कीमतें बंडल किए गए स्नैपशॉट से हैं। डेस्कटॉप संस्करण आपके क्षेत्र की कीमतें अपडेट करता है और Steam में इंस्टॉल गेम पहचानता है।",
+  'catalog.steamAll': "पूरा Steam",
+  'catalog.steamCount': "{count} गेम",
+  'catalog.steamError': "Steam लोड नहीं हो सका: {error}",
+  'catalog.retry': "फिर से कोशिश करें",
+  'catalog.steamEnd': "यही पूरी सूची है।",
+  'catalog.localGames': "लॉन्चर गेम",
 }

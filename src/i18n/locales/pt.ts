@@ -371,4 +371,10 @@ export const pt: Messages = {
   'home.steam': "Popular na Steam",
   'catalog.onSale': "Em promoção",
   'preview.steamStatus': "Preços do instantâneo incluído. A versão desktop atualiza os preços da sua região e detecta jogos instalados na Steam.",
+  'catalog.steamAll': "Toda a Steam",
+  'catalog.steamCount': "{count} jogos",
+  'catalog.steamError': "Não foi possível carregar a Steam: {error}",
+  'catalog.retry': "Tentar novamente",
+  'catalog.steamEnd': "Essa é a lista inteira.",
+  'catalog.localGames': "Jogos do launcher",
 }

@@ -369,4 +369,10 @@ export const ar: Messages = {
   'home.steam': "الأكثر شعبية على Steam",
   'catalog.onSale': "بخصم",
   'preview.steamStatus': "الأسعار من لقطة مضمّنة. يحدّث إصدار سطح المكتب الأسعار لمنطقتك ويكتشف الألعاب المثبتة في Steam.",
+  'catalog.steamAll': "كل Steam",
+  'catalog.steamCount': "{count} لعبة",
+  'catalog.steamError': "تعذّر تحميل Steam: {error}",
+  'catalog.retry': "إعادة المحاولة",
+  'catalog.steamEnd': "هذه هي القائمة كاملة.",
+  'catalog.localGames': "ألعاب المشغّل",
 }

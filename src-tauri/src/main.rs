@@ -142,6 +142,8 @@ fn main() {
             commands::get_notifications,
             commands::mark_notifications_read,
             commands::steam_open,
+            commands::steam_browse,
+            commands::steam_game,
         ])
         .run(tauri::generate_context!())
         .expect("failed to start FreeGame Launcher");

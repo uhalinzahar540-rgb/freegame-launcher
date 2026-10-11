@@ -373,4 +373,10 @@ export const de: Messages = {
   'home.steam': "Beliebt auf Steam",
   'catalog.onSale': "Im Angebot",
   'preview.steamStatus': "Preise aus dem mitgelieferten Stand. Die Desktop-Version aktualisiert die Preise für deine Region und erkennt in Steam installierte Spiele.",
+  'catalog.steamAll': "Ganz Steam",
+  'catalog.steamCount': "{count} Spiele",
+  'catalog.steamError': "Steam konnte nicht geladen werden: {error}",
+  'catalog.retry': "Erneut versuchen",
+  'catalog.steamEnd': "Das ist die ganze Liste.",
+  'catalog.localGames': "Launcher-Spiele",
 }

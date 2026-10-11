@@ -371,6 +371,12 @@ export const en = {
   'home.steam': "Popular on Steam",
   'catalog.onSale': "On sale",
   'preview.steamStatus': "Prices are from the bundled snapshot. The desktop version refreshes prices for your region and detects games installed in Steam.",
+  'catalog.steamAll': "All of Steam",
+  'catalog.steamCount': "{count} games",
+  'catalog.steamError': "Could not load Steam: {error}",
+  'catalog.retry': "Retry",
+  'catalog.steamEnd': "That is the whole list.",
+  'catalog.localGames': "Launcher games",
 } as const
 
 export type MessageKey = keyof typeof en

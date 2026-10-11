@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Search, SearchX, X } from 'lucide-react'
 import { useSearchParams } from 'react-router'
 import { GameCard, GameCardSkeleton } from '@/components/GameCard'
@@ -8,8 +8,27 @@ import { compareText } from '@/lib/format'
 import { sourceLabel } from '@/lib/game-state'
 import { cn } from '@/lib/utils'
 import { useLauncherStore } from '@/stores/launcher-store'
+import type { SteamSort } from '@/types'
+import { SteamBrowser } from './SteamBrowser'
 
 type SortKey = 'popular' | 'title' | 'new' | 'updated' | 'size'
+
+const STEAM_SORT: Record<SortKey, SteamSort> = {
+  popular: 'relevance',
+  title: 'title',
+  new: 'new',
+  updated: 'relevance',
+  size: 'relevance',
+}
+
+function useDebounced<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value)
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delay)
+    return () => clearTimeout(timer)
+  }, [value, delay])
+  return debounced
+}
 
 const SORTS: { value: SortKey; label: MessageKey }[] = [
   { value: 'popular', label: 'catalog.sortPopular' },
@@ -31,6 +50,11 @@ export function CatalogPage() {
   const installableOnly = params.get('installable') === '1'
   const onSaleOnly = params.get('sale') === '1'
   const sort = (params.get('sort') as SortKey) || 'popular'
+  const steamEnabled = useLauncherStore((s) => s.sources.find((x) => x.id === 'steam')?.enabled ?? false)
+  const steamQuery = useDebounced(query, 400)
+  // The full Steam catalog is paged by the store, so it replaces the bundled Steam snapshot here.
+  const showSteam = steamEnabled && (!source || source === 'steam') && !installableOnly && !genre
+  const showLocal = source !== 'steam'
 
   function update(key: string, value: string | null) {
     const next = new URLSearchParams(params)
@@ -47,6 +71,7 @@ export function CatalogPage() {
     const filtered = catalog.filter((g) => {
       if (genre && !g.genres.includes(genre)) return false
       if (source && g.sourceId !== source) return false
+      if (showSteam && g.sourceId === 'steam') return false
       if (installableOnly && !g.package) return false
       if (onSaleOnly && !(g.store?.price && g.store.price.discountPercent > 0)) return false
       if (!q) return true
@@ -75,9 +100,9 @@ export function CatalogPage() {
         sorted.sort((a, b) => b.popularity - a.popularity)
     }
     return sorted
-  }, [catalog, query, genre, source, installableOnly, onSaleOnly, sort])
+  }, [catalog, query, genre, source, installableOnly, onSaleOnly, sort, showSteam])
 
-  const hasStore = useMemo(() => catalog.some((g) => g.store), [catalog])
+  const hasStore = steamEnabled || catalog.some((g) => g.store)
   const hasFilters = !!(query || genre || source || installableOnly || onSaleOnly)
 
   return (
@@ -180,47 +205,62 @@ export function CatalogPage() {
         )}
       </div>
 
-      <div className="flex items-center justify-between text-sm text-muted-foreground">
-        <p>
-          {t('catalog.found')} <span className="font-semibold text-foreground tabular-nums">{results.length}</span>
-        </p>
-        {hasFilters && (
-          <button
-            type="button"
-            onClick={() => setParams(new URLSearchParams(), { replace: true })}
-            className="flex items-center gap-1 hover:text-foreground"
-          >
-            <X className="size-3.5" aria-hidden /> {t('catalog.reset')}
-          </button>
-        )}
-      </div>
+      {showLocal && (
+        <section aria-labelledby={showSteam ? 'local-games' : undefined} className="flex flex-col gap-4">
+          <div className="flex items-center justify-between gap-3 text-sm text-muted-foreground">
+            <div className="flex items-baseline gap-3">
+              {showSteam && (
+                <h2 id="local-games" className="font-display text-xl font-bold text-foreground">
+                  {t('catalog.localGames')}
+                </h2>
+              )}
+              <p>
+                {t('catalog.found')} <span className="font-semibold text-foreground tabular-nums">{results.length}</span>
+              </p>
+            </div>
+            {hasFilters && (
+              <button
+                type="button"
+                onClick={() => setParams(new URLSearchParams(), { replace: true })}
+                className="flex items-center gap-1 hover:text-foreground"
+              >
+                <X className="size-3.5" aria-hidden /> {t('catalog.reset')}
+              </button>
+            )}
+          </div>
 
-      {loading && catalog.length === 0 ? (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <GameCardSkeleton key={i} />
-          ))}
-        </div>
-      ) : results.length === 0 ? (
-        <EmptyState
-          icon={<SearchX />}
-          title={t('common.nothingFound')}
-          description={t('catalog.emptyDescription')}
-          action={
-            hasFilters ? (
-              <Cta variant="secondary" onClick={() => setParams(new URLSearchParams(), { replace: true })}>
-                {t('catalog.reset')}
-              </Cta>
-            ) : undefined
-          }
-        />
-      ) : (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
-          {results.map((g) => (
-            <GameCard key={g.id} game={g} />
-          ))}
-        </div>
+          {loading && catalog.length === 0 ? (
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <GameCardSkeleton key={i} />
+              ))}
+            </div>
+          ) : results.length === 0 ? (
+            showSteam ? null : (
+              <EmptyState
+                icon={<SearchX />}
+                title={t('common.nothingFound')}
+                description={t('catalog.emptyDescription')}
+                action={
+                  hasFilters ? (
+                    <Cta variant="secondary" onClick={() => setParams(new URLSearchParams(), { replace: true })}>
+                      {t('catalog.reset')}
+                    </Cta>
+                  ) : undefined
+                }
+              />
+            )
+          ) : (
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
+              {results.map((g) => (
+                <GameCard key={g.id} game={g} />
+              ))}
+            </div>
+          )}
+        </section>
       )}
+
+      {showSteam && <SteamBrowser query={steamQuery} sort={STEAM_SORT[sort]} onSale={onSaleOnly} />}
     </div>
   )
 }

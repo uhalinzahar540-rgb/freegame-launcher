@@ -28,6 +28,9 @@ interface LauncherState {
   /** True once the settings request has settled (successfully or not). */
   settingsResolved: boolean
   catalog: Game[]
+  /** Steam games seen while browsing the full store catalog, keyed by game id. */
+  steamGames: Record<string, Game>
+  rememberSteamGames(games: Game[]): void
   catalogLoading: boolean
   catalogError: string | null
   sources: SourceInfo[]
@@ -158,6 +161,30 @@ export const useLauncherStore = create<LauncherState>((set, get) => {
     initialized: false,
     settingsResolved: false,
     catalog: [],
+    steamGames: {},
+    rememberSteamGames(games) {
+      if (games.length === 0) return
+      set((s) => {
+        const next = { ...s.steamGames }
+        for (const g of games) {
+          const known = next[g.id]
+          // Search rows are sparse; keep richer details and the release date when they exist.
+          next[g.id] = known
+            ? {
+                ...known,
+                ...g,
+                description: g.description || known.description,
+                shortDescription: g.shortDescription || known.shortDescription,
+                genres: g.genres.length ? g.genres : known.genres,
+                screenshots: g.screenshots.length ? g.screenshots : known.screenshots,
+                developer: g.developer ?? known.developer,
+                releaseDate: g.releaseDate ?? known.releaseDate,
+              }
+            : g
+        }
+        return { steamGames: next }
+      })
+    },
     catalogLoading: true,
     catalogError: null,
     sources: [],

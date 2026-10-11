@@ -370,4 +370,10 @@ export const ja: Messages = {
   'home.steam': "Steam で人気",
   'catalog.onSale': "セール中",
   'preview.steamStatus': "価格は同梱のスナップショットです。デスクトップ版では地域の価格を更新し、Steam にインストール済みのゲームを検出します。",
+  'catalog.steamAll': "Steam 全体",
+  'catalog.steamCount': "{count} 本",
+  'catalog.steamError': "Steam を読み込めませんでした: {error}",
+  'catalog.retry': "再試行",
+  'catalog.steamEnd': "これで全部です。",
+  'catalog.localGames': "ランチャーのゲーム",
 }

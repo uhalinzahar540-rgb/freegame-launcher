@@ -222,6 +222,23 @@ pub async fn steam_open(app: State<'_, Shared>, app_id: u32, action: String) -> 
     app.handle.opener().open_url(url, None::<&str>).map_err(|e| e.to_string())
 }
 
+/// A page of the full Steam catalog: search, sort and "on sale" are applied by the store.
+#[tauri::command]
+pub async fn steam_browse(
+    app: State<'_, Shared>,
+    query: String,
+    start: u32,
+    sort: String,
+    on_sale: bool,
+) -> Res<crate::steam::SteamPage> {
+    crate::steam::browse(&app.http, &query, start, &sort, on_sale, &crate::steam::region()).await
+}
+
+#[tauri::command]
+pub async fn steam_game(app: State<'_, Shared>, app_id: u32) -> Res<crate::models::Game> {
+    crate::steam::details(&app.http, app_id, &crate::steam::region(), &app.lang()).await
+}
+
 #[tauri::command]
 pub async fn mark_notifications_read(app: State<'_, Shared>) -> Res<()> {
     app.store.update(|d| d.notifications.iter_mut().for_each(|n| n.read = true));

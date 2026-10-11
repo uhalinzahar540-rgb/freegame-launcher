@@ -12,6 +12,7 @@ import {
   Download,
 } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router'
+import useSWR from 'swr'
 import { GameActionButton } from '@/components/GameActionButton'
 import { GameCover } from '@/components/GameCard'
 import { Modal } from '@/components/Modal'
@@ -32,7 +33,18 @@ export function GameDetailsPage() {
   const id = decodeURIComponent(gameId)
   const navigate = useNavigate()
   const state = useGameState(id)
-  const loading = useLauncherStore((s) => s.catalogLoading)
+  const steamAppId = /^steam:\d+$/.test(id) ? Number(id.slice('steam:'.length)) : null
+  // Rows from the full Steam catalog carry no description; load the store page data on open.
+  const steamDetails = useSWR(
+    steamAppId !== null && !state.game?.description ? ['steam-game', steamAppId] : null,
+    async () => {
+      const full = await backend.getSteamGame(steamAppId!)
+      useLauncherStore.getState().rememberSteamGames([full])
+      return full
+    },
+    { revalidateOnFocus: false },
+  )
+  const loading = useLauncherStore((s) => s.catalogLoading) || steamDetails.isLoading
   const source = useLauncherStore((s) => s.sources.find((x) => x.id === state.game?.sourceId))
   const { verify, uninstall, setFavorite, launch, openSteam } = useLauncherStore.getState()
   const [confirmRemove, setConfirmRemove] = useState(false)

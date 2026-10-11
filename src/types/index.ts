@@ -90,6 +90,21 @@ export interface StoreInfo {
 
 export type SteamAction = 'store' | 'install' | 'run'
 
+export type SteamSort = 'relevance' | 'title' | 'new' | 'reviews' | 'price'
+
+export interface SteamBrowseParams {
+  query: string
+  start: number
+  sort: SteamSort
+  onSale: boolean
+}
+
+/** One page of the full Steam store catalog. */
+export interface SteamPage {
+  total: number
+  games: Game[]
+}
+
 export interface Installation {
   gameId: string
   title: string

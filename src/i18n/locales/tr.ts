@@ -370,4 +370,10 @@ export const tr: Messages = {
   'home.steam': "Steam’de popüler",
   'catalog.onSale': "İndirimde",
   'preview.steamStatus': "Fiyatlar dahili anlık görüntüden. Masaüstü sürümü bölgenizin fiyatlarını günceller ve Steam’de kurulu oyunları algılar.",
+  'catalog.steamAll': "Tüm Steam",
+  'catalog.steamCount': "{count} oyun",
+  'catalog.steamError': "Steam yüklenemedi: {error}",
+  'catalog.retry': "Tekrar dene",
+  'catalog.steamEnd': "Listenin tamamı bu.",
+  'catalog.localGames': "Başlatıcı oyunları",
 }

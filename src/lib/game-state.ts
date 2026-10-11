@@ -63,7 +63,7 @@ export function latestDownloadFor(downloads: Record<string, DownloadTask>, gameI
 }
 
 export function useGameState(gameId: string): GameState & { game: Game | undefined } {
-  const game = useLauncherStore((s) => s.catalog.find((g) => g.id === gameId))
+  const game = useLauncherStore((s) => s.steamGames[gameId] ?? s.catalog.find((g) => g.id === gameId))
   const installation = useLauncherStore((s) => s.library.find((i) => i.gameId === gameId) ?? null)
   const downloads = useLauncherStore((s) => s.downloads)
   const update = useLauncherStore((s) => s.updates.find((u) => u.gameId === gameId) ?? null)

@@ -78,6 +78,8 @@ export function createTauriBackend(appVersion: string): Backend {
     openExternal: (url) => openUrl(url),
     openPath: (path) => openPath(path),
     openSteam: (appId, action) => invoke('steam_open', { appId, action }),
+    browseSteam: (params) => invoke('steam_browse', { ...params }),
+    getSteamGame: (appId) => invoke('steam_game', { appId }),
 
     async onEvent(handler) {
       return listen<BackendEvent>(EVENT_CHANNEL, (event) => handler(event.payload))

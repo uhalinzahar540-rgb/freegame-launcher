@@ -363,4 +363,10 @@ export const zh: Messages = {
   'home.steam': "Steam 热门",
   'catalog.onSale': "特惠中",
   'preview.steamStatus': "价格来自内置快照。桌面版会更新您所在地区的价格，并识别已在 Steam 中安装的游戏。",
+  'catalog.steamAll': "全部 Steam",
+  'catalog.steamCount': "{count} 款游戏",
+  'catalog.steamError': "无法加载 Steam：{error}",
+  'catalog.retry': "重试",
+  'catalog.steamEnd': "已经是全部了。",
+  'catalog.localGames': "启动器游戏",
 }
