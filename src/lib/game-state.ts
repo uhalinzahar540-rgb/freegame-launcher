@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { t } from '@/i18n'
 import { useLauncherStore } from '@/stores/launcher-store'
 import type { DownloadTask, Game, Installation, UpdateInfo } from '@/types'
 
@@ -74,11 +75,11 @@ export function useGameState(gameId: string): GameState & { game: Game | undefin
 export function sourceLabel(sourceId: string): string {
   switch (sourceId) {
     case 'opensource':
-      return 'Открытые игры'
+      return t('source.opensource')
     case 'freetp':
       return 'FreeTP'
     case 'local':
-      return 'Локальная'
+      return t('source.local')
     default:
       return sourceId
   }

@@ -4,7 +4,8 @@ import { Link, useNavigate } from 'react-router'
 import { GameActionButton } from '@/components/GameActionButton'
 import { GameCover } from '@/components/GameCard'
 import { Badge, Cta, EmptyState, PageHeader } from '@/components/ui/primitives'
-import { formatBytes, formatDuration, formatRelative } from '@/lib/format'
+import { useT } from '@/i18n'
+import { compareText, formatBytes, formatDuration, formatRelative } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { backend } from '@/services'
 import { useLauncherStore } from '@/stores/launcher-store'
@@ -13,6 +14,7 @@ import { AddGameDialog } from './AddGameDialog'
 type SortKey = 'recent' | 'title' | 'playtime' | 'size' | 'installed'
 
 export function LibraryPage() {
+  const t = useT()
   const navigate = useNavigate()
   const library = useLauncherStore((s) => s.library)
   const catalog = useLauncherStore((s) => s.catalog)
@@ -31,7 +33,7 @@ export function LibraryPage() {
     const sorted = [...list]
     switch (sort) {
       case 'title':
-        sorted.sort((a, b) => a.title.localeCompare(b.title, 'ru'))
+        sorted.sort((a, b) => compareText(a.title, b.title))
         break
       case 'playtime':
         sorted.sort((a, b) => b.playtimeSeconds - a.playtimeSeconds)
@@ -51,18 +53,21 @@ export function LibraryPage() {
   const totalPlaytime = library.reduce((s, i) => s + i.playtimeSeconds, 0)
   const totalSize = library.reduce((s, i) => s + i.sizeBytes, 0)
 
+  const summary = [
+    t('library.summary', { count: library.length, size: formatBytes(totalSize) }),
+    showPlaytime ? t('library.summaryPlaytime', { time: formatDuration(totalPlaytime) }) : null,
+  ]
+    .filter(Boolean)
+    .join(' · ')
+
   return (
     <div className="flex flex-col gap-6 p-6 lg:p-8">
       <PageHeader
-        title="Библиотека"
-        description={
-          library.length
-            ? `${library.length} игр · ${formatBytes(totalSize)} на диске${showPlaytime ? ` · ${formatDuration(totalPlaytime)} в играх` : ''}`
-            : 'Установленные и добавленные вручную игры.'
-        }
+        title={t('library.title')}
+        description={library.length ? summary : t('library.descriptionEmpty')}
         actions={
           <Cta variant="secondary" onClick={() => setAddOpen(true)}>
-            <FilePlus aria-hidden /> Добавить игру
+            <FilePlus aria-hidden /> {t('library.add')}
           </Cta>
         }
       />
@@ -71,25 +76,25 @@ export function LibraryPage() {
         <div className="flex flex-wrap gap-3">
           <label className="group flex h-10 min-w-56 flex-1 items-center gap-2 rounded-lg border border-border bg-card px-3 focus-within:border-primary/70">
             <Search className="size-4 text-muted-foreground" aria-hidden />
-            <span className="sr-only">Поиск в библиотеке</span>
+            <span className="sr-only">{t('library.search')}</span>
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Поиск в библиотеке"
+              placeholder={t('library.search')}
               className="h-full w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
             />
           </label>
           <select
-            aria-label="Сортировка"
+            aria-label={t('common.sort')}
             value={sort}
             onChange={(e) => setSort(e.target.value as SortKey)}
             className="h-10 rounded-lg border border-border bg-card px-3 text-sm outline-none focus:border-primary/70"
           >
-            <option value="recent">Недавние</option>
-            <option value="title">По названию</option>
-            <option value="playtime">По времени в игре</option>
-            <option value="size">По размеру</option>
-            <option value="installed">По дате установки</option>
+            <option value="recent">{t('library.sortRecent')}</option>
+            <option value="title">{t('catalog.sortTitle')}</option>
+            <option value="playtime">{t('library.sortPlaytime')}</option>
+            <option value="size">{t('catalog.sortSize')}</option>
+            <option value="installed">{t('library.sortInstalled')}</option>
           </select>
           <button
             type="button"
@@ -100,7 +105,8 @@ export function LibraryPage() {
               favoritesOnly ? 'border-primary bg-primary/15' : 'border-border bg-card text-muted-foreground',
             )}
           >
-            <Heart className={cn('size-4', favoritesOnly && 'fill-primary text-primary')} aria-hidden /> Избранное
+            <Heart className={cn('size-4', favoritesOnly && 'fill-primary text-primary')} aria-hidden />{' '}
+            {t('library.favorites')}
           </button>
         </div>
       )}
@@ -108,16 +114,12 @@ export function LibraryPage() {
       {library.length === 0 ? (
         <EmptyState
           icon={<Library />}
-          title="Библиотека пуста"
-          description={
-            backend.isDesktop
-              ? 'Установите игру из каталога или добавьте уже установленную, указав её .exe-файл.'
-              : 'Библиотека хранится в SQLite десктопного приложения и недоступна в браузерном предпросмотре.'
-          }
-          action={<Cta onClick={() => navigate('/catalog')}>Открыть каталог</Cta>}
+          title={t('library.emptyTitle')}
+          description={backend.isDesktop ? t('library.emptyDesktop') : t('library.emptyPreview')}
+          action={<Cta onClick={() => navigate('/catalog')}>{t('common.openCatalog')}</Cta>}
         />
       ) : items.length === 0 ? (
-        <p className="py-12 text-center text-sm text-muted-foreground">Ничего не найдено</p>
+        <p className="py-12 text-center text-sm text-muted-foreground">{t('common.nothingFound')}</p>
       ) : (
         <ul className="flex flex-col gap-2">
           {items.map((item) => (
@@ -139,10 +141,10 @@ export function LibraryPage() {
                   >
                     {item.title}
                   </Link>
-                  {item.manual && <Badge>Добавлена вручную</Badge>}
+                  {item.manual && <Badge>{t('library.manual')}</Badge>}
                   {!item.executableExists && (
                     <Badge tone="primary">
-                      <TriangleAlert className="size-3" aria-hidden /> Файлы не найдены
+                      <TriangleAlert className="size-3" aria-hidden /> {t('library.filesMissing')}
                     </Badge>
                   )}
                 </div>
@@ -152,7 +154,7 @@ export function LibraryPage() {
                       <Clock className="size-3.5" aria-hidden /> {formatDuration(item.playtimeSeconds)}
                     </span>
                   )}
-                  <span>Запуск: {formatRelative(item.lastPlayedAt)}</span>
+                  <span>{t('library.lastLaunch', { when: formatRelative(item.lastPlayedAt) })}</span>
                   <span>{formatBytes(item.sizeBytes)}</span>
                   <span className="max-w-xs truncate font-mono" title={item.installPath}>
                     {item.installPath}
@@ -162,7 +164,7 @@ export function LibraryPage() {
               <button
                 type="button"
                 onClick={() => setFavorite(item.gameId, !item.favorite)}
-                aria-label={item.favorite ? 'Убрать из избранного' : 'В избранное'}
+                aria-label={item.favorite ? t('common.favoriteRemove') : t('common.favoriteAdd')}
                 aria-pressed={item.favorite}
                 className="rounded-md p-2 text-muted-foreground transition-colors hover:text-primary"
               >

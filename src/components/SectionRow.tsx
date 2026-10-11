@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { ChevronRight } from 'lucide-react'
 import { Link } from 'react-router'
+import { useT } from '@/i18n'
 
 export function SectionRow({
   title,
@@ -11,6 +12,7 @@ export function SectionRow({
   href?: string
   children: ReactNode
 }) {
+  const t = useT()
   return (
     <section aria-label={title} className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
@@ -23,7 +25,7 @@ export function SectionRow({
             to={href}
             className="flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-primary-hover"
           >
-            Все <ChevronRight className="size-4" aria-hidden />
+            {t('common.all')} <ChevronRight className="size-4 rtl:rotate-180" aria-hidden />
           </Link>
         )}
       </div>

@@ -2,6 +2,7 @@ import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { open } from '@tauri-apps/plugin-dialog'
 import { openPath, openUrl } from '@tauri-apps/plugin-opener'
+import { t } from '@/i18n'
 import type { Backend } from './backend'
 import type {
   AppNotification,
@@ -69,8 +70,8 @@ export function createTauriBackend(appVersion: string): Backend {
       const result = await open({
         directory: false,
         multiple: false,
-        title: 'Выберите исполняемый файл игры',
-        filters: [{ name: 'Приложение Windows', extensions: ['exe'] }],
+        title: t('addGame.dialogTitle'),
+        filters: [{ name: t('addGame.dialogFilter'), extensions: ['exe'] }],
       })
       return typeof result === 'string' ? result : null
     },

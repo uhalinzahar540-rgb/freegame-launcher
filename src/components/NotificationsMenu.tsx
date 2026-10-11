@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Bell } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
+import { useT } from '@/i18n'
 import { formatRelative } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { useLauncherStore } from '@/stores/launcher-store'
@@ -9,10 +10,11 @@ const KIND_COLOR = {
   info: 'bg-foreground/60',
   success: 'bg-success',
   warning: 'bg-warning',
-  error: 'bg-primary',
+  error: 'bg-destructive',
 } as const
 
 export function NotificationsMenu() {
+  const t = useT()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const notifications = useLauncherStore((s) => s.notifications)
@@ -37,7 +39,7 @@ export function NotificationsMenu() {
     <div ref={ref} className="relative">
       <button
         type="button"
-        aria-label={`Уведомления${unread ? `, непрочитанных: ${unread}` : ''}`}
+        aria-label={unread ? t('notifications.unread', { count: unread }) : t('notifications.title')}
         aria-expanded={open}
         onClick={() => {
           setOpen((o) => !o)
@@ -46,7 +48,7 @@ export function NotificationsMenu() {
         className="relative flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-panel hover:text-foreground"
       >
         <Bell className="size-4" />
-        {unread > 0 && <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-primary shadow-glow" />}
+        {unread > 0 && <span className="absolute top-1.5 end-1.5 size-2 rounded-full bg-primary shadow-glow" />}
       </button>
       <AnimatePresence>
         {open && (
@@ -55,12 +57,12 @@ export function NotificationsMenu() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.98 }}
             transition={{ duration: 0.15 }}
-            className="absolute top-10 right-0 w-80 overflow-hidden rounded-xl border border-border bg-card/95 shadow-2xl backdrop-blur-xl"
+            className="manga-panel absolute top-10 end-0 w-80 overflow-hidden rounded-xl border border-border bg-card/95 shadow-2xl backdrop-blur-xl"
           >
-            <div className="border-b border-border px-4 py-3 text-sm font-semibold">Уведомления</div>
+            <div className="border-b border-border px-4 py-3 text-sm font-semibold">{t('notifications.title')}</div>
             <ul className="max-h-96 overflow-y-auto">
               {notifications.length === 0 && (
-                <li className="px-4 py-8 text-center text-sm text-muted-foreground">Пока ничего нового</li>
+                <li className="px-4 py-8 text-center text-sm text-muted-foreground">{t('notifications.empty')}</li>
               )}
               {notifications.map((n) => (
                 <li key={n.id} className="flex gap-3 border-b border-border/60 px-4 py-3 last:border-0">

@@ -3,11 +3,13 @@ import { motion } from 'motion/react'
 import { Link } from 'react-router'
 import { GameActionButton } from '@/components/GameActionButton'
 import { Badge } from '@/components/ui/primitives'
+import { useT } from '@/i18n'
 import { sourceLabel, useGameState } from '@/lib/game-state'
 import { cn } from '@/lib/utils'
 import type { Game } from '@/types'
 
 export function GameCover({ src, title, className }: { src: string | null; title: string; className?: string }) {
+  const t = useT()
   if (!src) {
     return (
       <div
@@ -24,16 +26,19 @@ export function GameCover({ src, title, className }: { src: string | null; title
   return (
     <img
       src={src}
-      alt={`Обложка ${title}`}
+      alt={t('game.cover', { title })}
       loading="lazy"
       decoding="async"
       referrerPolicy="no-referrer"
-      className={cn('object-cover', className)}
+      className={cn('game-art object-cover', className)}
     />
   )
 }
 
+const COVER_BADGE = 'border-white/15 bg-black/60 text-white backdrop-blur'
+
 export function GameCard({ game, className }: { game: Game; className?: string }) {
+  const t = useT()
   const { phase } = useGameState(game.id)
   const installed = phase === 'installed' || phase === 'update' || phase === 'running'
 
@@ -42,7 +47,7 @@ export function GameCard({ game, className }: { game: Game; className?: string }
       whileHover={{ y: -4 }}
       transition={{ type: 'spring', stiffness: 400, damping: 28 }}
       className={cn(
-        'group relative flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-[border-color,box-shadow] duration-300 hover:border-primary/60 hover:shadow-[0_12px_40px_-12px_rgba(229,9,20,0.55)]',
+        'group relative flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-[border-color,box-shadow] duration-300 hover:border-primary/60 hover:shadow-card-hover',
         className,
       )}
     >
@@ -53,12 +58,12 @@ export function GameCard({ game, className }: { game: Game; className?: string }
           className="size-full transition-transform duration-500 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-card via-card/10 to-transparent" />
-        <div className="absolute top-2 left-2 flex gap-1.5">
-          <Badge className="bg-black/60 backdrop-blur">{sourceLabel(game.sourceId)}</Badge>
-          {installed && <Badge tone="success" className="bg-black/60 backdrop-blur">Установлена</Badge>}
-          {phase === 'update' && <Badge tone="warning" className="bg-black/60 backdrop-blur">Обновление</Badge>}
+        <div className="absolute top-2 start-2 flex gap-1.5">
+          <Badge className={COVER_BADGE}>{sourceLabel(game.sourceId)}</Badge>
+          {installed && <Badge className={COVER_BADGE}>{t('game.installed')}</Badge>}
+          {phase === 'update' && <Badge className={COVER_BADGE}>{t('game.updateBadge')}</Badge>}
         </div>
-        <span className="sr-only">Открыть страницу {game.title}</span>
+        <span className="sr-only">{t('game.openPage', { title: game.title })}</span>
       </Link>
       <div className="flex flex-1 flex-col gap-3 p-4 pt-1">
         <div className="min-w-0">
@@ -68,7 +73,7 @@ export function GameCard({ game, className }: { game: Game; className?: string }
             </Link>
           </h3>
           <p className="mt-0.5 truncate text-xs text-muted-foreground">
-            {game.genres.slice(0, 2).join(' · ') || 'Без жанра'}
+            {game.genres.slice(0, 2).join(' · ') || t('common.noGenre')}
           </p>
         </div>
         <GameActionButton gameId={game.id} size="sm" className="mt-auto w-full" />
@@ -80,7 +85,7 @@ export function GameCard({ game, className }: { game: Game; className?: string }
 export function GameCardSkeleton() {
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-card">
-      <div className="aspect-video animate-shimmer bg-[linear-gradient(90deg,#171717_0%,#232323_40%,#2b1414_50%,#232323_60%,#171717_100%)] bg-[length:200%_100%]" />
+      <div className="skeleton-shimmer aspect-video animate-shimmer" />
       <div className="flex flex-col gap-2 p-4">
         <div className="h-4 w-2/3 rounded bg-panel" />
         <div className="h-3 w-1/3 rounded bg-panel" />

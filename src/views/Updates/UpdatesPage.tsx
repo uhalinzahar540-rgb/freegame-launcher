@@ -2,12 +2,14 @@ import { useState } from 'react'
 import { ArrowRight, CircleCheck, RefreshCw, Rocket } from 'lucide-react'
 import { GameCover } from '@/components/GameCard'
 import { Cta, EmptyState, PageHeader } from '@/components/ui/primitives'
+import { useT } from '@/i18n'
 import { formatBytes, formatRelative } from '@/lib/format'
 import { backend, errorMessage } from '@/services'
 import { useLauncherStore } from '@/stores/launcher-store'
 import type { LauncherUpdateInfo } from '@/types'
 
 export function UpdatesPage() {
+  const t = useT()
   const updates = useLauncherStore((s) => s.updates)
   const checkedAt = useLauncherStore((s) => s.updatesCheckedAt)
   const checking = useLauncherStore((s) => s.checkingUpdates)
@@ -21,7 +23,7 @@ export function UpdatesPage() {
     try {
       setLauncherInfo(await backend.checkLauncherUpdate())
     } catch (error) {
-      toast('error', 'Не удалось проверить обновления лаунчера', errorMessage(error))
+      toast('error', t('updates.launcherFailed'), errorMessage(error))
     } finally {
       setCheckingLauncher(false)
     }
@@ -30,12 +32,12 @@ export function UpdatesPage() {
   return (
     <div className="flex flex-col gap-8 p-6 lg:p-8">
       <PageHeader
-        title="Обновления"
-        description="Обновления определяются только по манифестам источников: новая версия пакета с собственной контрольной суммой. Изменения текста на сайтах не учитываются."
+        title={t('updates.title')}
+        description={t('updates.description')}
         actions={
           <Cta onClick={() => checkUpdates()} disabled={checking}>
             <RefreshCw className={checking ? 'animate-spin' : ''} aria-hidden />
-            {checking ? 'Проверка…' : 'Проверить обновления'}
+            {checking ? t('common.checking') : t('updates.check')}
           </Cta>
         }
       />
@@ -43,22 +45,18 @@ export function UpdatesPage() {
       <section aria-labelledby="game-updates" className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <h2 id="game-updates" className="font-display text-lg font-semibold">
-            Игры
+            {t('updates.games')}
           </h2>
           <p className="text-xs text-muted-foreground">
-            {checkedAt ? `Проверено ${formatRelative(checkedAt)}` : 'Ещё не проверялось'}
+            {checkedAt ? t('updates.checkedAt', { when: formatRelative(checkedAt) }) : t('updates.neverChecked')}
           </p>
         </div>
 
         {updates.length === 0 ? (
           <EmptyState
             icon={<CircleCheck />}
-            title={checkedAt ? 'Все игры в актуальном состоянии' : 'Проверьте наличие обновлений'}
-            description={
-              backend.isDesktop
-                ? 'Лаунчер сравнивает установленные версии с манифестами подключённых источников.'
-                : 'В предпросмотре нет установленных игр, поэтому обновлять нечего.'
-            }
+            title={checkedAt ? t('store.allUpToDate') : t('updates.checkPrompt')}
+            description={backend.isDesktop ? t('updates.descriptionDesktop') : t('updates.descriptionPreview')}
           />
         ) : (
           <ul className="flex flex-col gap-2">
@@ -72,13 +70,14 @@ export function UpdatesPage() {
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-display text-sm font-semibold">{u.title}</p>
                     <p className="mt-1 flex items-center gap-2 text-xs text-muted-foreground tabular-nums">
-                      {u.installedVersion ?? '—'} <ArrowRight className="size-3 text-warning" aria-hidden />
+                      {u.installedVersion ?? '—'}{' '}
+                      <ArrowRight className="size-3 text-warning rtl:rotate-180" aria-hidden />
                       <span className="font-semibold text-warning">{u.availableVersion}</span>
                       <span>· {formatBytes(u.sizeBytes)}</span>
                     </p>
                   </div>
                   <Cta variant="warning" size="sm" onClick={() => startUpdate(u.gameId)}>
-                    <RefreshCw aria-hidden /> Обновить
+                    <RefreshCw aria-hidden /> {t('common.update')}
                   </Cta>
                 </li>
               )
@@ -97,11 +96,13 @@ export function UpdatesPage() {
               <h2 id="launcher-update" className="font-display text-sm font-semibold">
                 FreeGame Launcher
               </h2>
-              <p className="text-xs text-muted-foreground">Установлена версия {backend.appVersion}</p>
+              <p className="text-xs text-muted-foreground">
+                {t('updates.installedVersion', { version: backend.appVersion })}
+              </p>
             </div>
           </div>
           <Cta variant="secondary" size="sm" onClick={checkLauncher} disabled={checkingLauncher}>
-            <RefreshCw className={checkingLauncher ? 'animate-spin' : ''} aria-hidden /> Проверить
+            <RefreshCw className={checkingLauncher ? 'animate-spin' : ''} aria-hidden /> {t('updates.checkShort')}
           </Cta>
         </div>
         {launcherInfo && (
@@ -113,8 +114,8 @@ export function UpdatesPage() {
             }`}
           >
             {launcherInfo.available
-              ? `Доступна версия ${launcherInfo.version}. ${launcherInfo.notes ?? ''}`
-              : (launcherInfo.message ?? 'Установлена последняя версия.')}
+              ? `${t('updates.available', { version: launcherInfo.version ?? '' })} ${launcherInfo.notes ?? ''}`
+              : (launcherInfo.message ?? t('updates.latest'))}
           </p>
         )}
       </section>

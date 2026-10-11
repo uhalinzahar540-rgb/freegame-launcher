@@ -1,3 +1,6 @@
+import type { LanguageCode } from '@/i18n'
+import type { ThemeId } from '@/lib/themes'
+
 export type SourceKind = 'http' | 'local' | 'freetp'
 
 export type SourceStatus = 'online' | 'limited' | 'offline' | 'error' | 'disabled' | 'unknown'
@@ -142,7 +145,10 @@ export interface PlayStats {
 export interface Settings {
   launchOnStartup: boolean
   minimizeToTray: boolean
-  language: 'ru'
+  language: LanguageCode
+  theme: ThemeId
+  /** False until the first-run wizard (language + theme) is finished. */
+  onboardingCompleted: boolean
   notifications: boolean
   downloadDir: string
   speedLimitKbps: number

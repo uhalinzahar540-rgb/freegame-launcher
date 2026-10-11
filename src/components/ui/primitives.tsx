@@ -1,5 +1,6 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
+import { useTheme } from '@/lib/themes'
 import { cn } from '@/lib/utils'
 
 export const ctaVariants = cva(
@@ -9,8 +10,8 @@ export const ctaVariants = cva(
       variant: {
         primary: 'bg-primary text-primary-foreground shadow-glow hover:bg-primary-hover hover:shadow-glow-lg',
         play: 'bg-gradient-to-b from-primary-hover to-primary text-primary-foreground shadow-glow hover:brightness-110 hover:shadow-glow-lg',
-        warning: 'bg-warning text-black hover:brightness-110',
-        secondary: 'border border-border bg-panel text-foreground hover:border-foreground/20 hover:bg-[#2a2a2a]',
+        warning: 'bg-warning text-warning-foreground hover:brightness-110',
+        secondary: 'border border-border bg-panel text-foreground hover:border-foreground/20 hover:bg-panel-hover',
         ghost: 'text-muted-foreground hover:bg-panel hover:text-foreground',
         outline: 'border border-primary/50 text-foreground hover:border-primary hover:bg-primary/10',
         danger: 'border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20',
@@ -54,7 +55,7 @@ export function ProgressBar({
 }) {
   const pct = Math.max(0, Math.min(100, value))
   const toneClass = {
-    primary: 'bg-gradient-to-r from-primary-deep via-primary to-primary-hover shadow-[0_0_12px_rgba(229,9,20,0.6)]',
+    primary: 'bg-gradient-to-r from-primary-deep via-primary to-primary-hover shadow-bar',
     warning: 'bg-warning',
     success: 'bg-success',
     muted: 'bg-muted-foreground/60',
@@ -82,13 +83,7 @@ export function ProgressBar({
 
 export function Skeleton({ className }: { className?: string }) {
   return (
-    <div
-      className={cn(
-        'animate-shimmer rounded-lg bg-[linear-gradient(90deg,#171717_0%,#232323_40%,#2b1414_50%,#232323_60%,#171717_100%)] bg-[length:200%_100%]',
-        className,
-      )}
-      aria-hidden
-    />
+    <div className={cn('skeleton-shimmer animate-shimmer rounded-lg', className)} aria-hidden />
   )
 }
 
@@ -118,8 +113,8 @@ export function Switch({
     >
       <span
         className={cn(
-          'inline-block size-4 rounded-full bg-white shadow transition-transform',
-          checked ? 'translate-x-6' : 'translate-x-1',
+          'inline-block size-4 rounded-full shadow transition-transform',
+          checked ? 'translate-x-6 bg-primary-foreground' : 'translate-x-1 bg-foreground/70',
         )}
       />
     </button>
@@ -185,11 +180,22 @@ export function EmptyState({
   description?: string
   action?: ReactNode
 }) {
+  const theme = useTheme()
   return (
     <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card/40 px-6 py-16 text-center">
-      <div className="mb-4 flex size-14 items-center justify-center rounded-2xl border border-primary/30 bg-primary/10 text-primary [&_svg]:size-6">
-        {icon}
-      </div>
+      {theme === 'manga' ? (
+        <img
+          src="/themes/manga/empty.png"
+          alt=""
+          width={144}
+          height={144}
+          className="mb-5 size-36 rounded-md border-2 border-foreground object-cover"
+        />
+      ) : (
+        <div className="mb-4 flex size-14 items-center justify-center rounded-2xl border border-primary/30 bg-primary/10 text-primary [&_svg]:size-6">
+          {icon}
+        </div>
+      )}
       <h2 className="font-display text-lg font-semibold">{title}</h2>
       {description && <p className="mt-2 max-w-md text-sm text-pretty text-muted-foreground">{description}</p>}
       {action && <div className="mt-6">{action}</div>}

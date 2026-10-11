@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Clock, History, TriangleAlert } from 'lucide-react'
+import { useT } from '@/i18n'
 import { formatBytes, formatDate, formatDuration, formatRelative } from '@/lib/format'
 import { backend } from '@/services'
 import { useLauncherStore } from '@/stores/launcher-store'
 import type { Installation, PlayStats } from '@/types'
 
 export function InstallationPanel({ installation }: { installation: Installation }) {
+  const t = useT()
   const showPlaytime = useLauncherStore((s) => s.settings?.showPlaytime ?? true)
   const isRunning = useLauncherStore((s) => s.running.includes(installation.gameId))
   const [stats, setStats] = useState<PlayStats | null>(null)
@@ -24,30 +26,34 @@ export function InstallationPanel({ installation }: { installation: Installation
   return (
     <section aria-labelledby="install-info" className="flex flex-col gap-4">
       <h2 id="install-info" className="font-display text-lg font-semibold">
-        Установка
+        {t('installation.title')}
       </h2>
 
       {!installation.executableExists && (
-        <div className="flex gap-3 rounded-xl border border-primary/40 bg-primary/10 p-3 text-sm">
-          <TriangleAlert className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
-          <p>Исполняемый файл не найден. Возможно, игра была перемещена или удалена вручную.</p>
+        <div className="flex gap-3 rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-sm">
+          <TriangleAlert className="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden />
+          <p>{t('installation.missingExe')}</p>
         </div>
       )}
 
       <dl className="grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2">
-        <Cell label="Путь установки" value={installation.installPath} mono />
-        <Cell label="Исполняемый файл" value={installation.executable} mono />
-        <Cell label="Размер на диске" value={formatBytes(installation.sizeBytes)} />
-        <Cell label="Установлена" value={formatDate(installation.installedAt)} />
-        {showPlaytime && <Cell label="Время в игре" value={formatDuration(installation.playtimeSeconds)} />}
-        <Cell label="Последний запуск" value={formatRelative(installation.lastPlayedAt)} />
+        <Cell label={t('installation.path')} value={installation.installPath} mono />
+        <Cell label={t('installation.executable')} value={installation.executable} mono />
+        <Cell label={t('installation.size')} value={formatBytes(installation.sizeBytes)} />
+        <Cell label={t('installation.installed')} value={formatDate(installation.installedAt)} />
+        {showPlaytime && (
+          <Cell label={t('installation.playtime')} value={formatDuration(installation.playtimeSeconds)} />
+        )}
+        <Cell label={t('installation.lastPlayed')} value={formatRelative(installation.lastPlayedAt)} />
       </dl>
 
       {showPlaytime && stats && stats.sessions.length > 0 && (
         <div className="rounded-xl border border-border bg-card">
           <p className="flex items-center gap-2 border-b border-border px-4 py-3 text-sm font-semibold">
-            <History className="size-4 text-primary" aria-hidden /> Последние сессии
-            <span className="ml-auto text-xs font-normal text-muted-foreground">Всего: {stats.sessionCount}</span>
+            <History className="size-4 text-primary" aria-hidden /> {t('installation.sessions')}
+            <span className="ms-auto text-xs font-normal text-muted-foreground">
+              {t('installation.total', { count: stats.sessionCount })}
+            </span>
           </p>
           <ul>
             {stats.sessions.slice(0, 8).map((s) => (
@@ -58,7 +64,7 @@ export function InstallationPanel({ installation }: { installation: Installation
                 <span className="text-muted-foreground">{formatRelative(s.startedAt)}</span>
                 <span className="flex items-center gap-1.5 tabular-nums">
                   <Clock className="size-3.5 text-muted-foreground" aria-hidden />
-                  {s.endedAt ? formatDuration(s.durationSeconds) : 'идёт сейчас'}
+                  {s.endedAt ? formatDuration(s.durationSeconds) : t('installation.playingNow')}
                 </span>
               </li>
             ))}

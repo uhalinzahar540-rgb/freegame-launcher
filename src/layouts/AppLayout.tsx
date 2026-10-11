@@ -27,7 +27,7 @@ export function AppLayout() {
         <TitleBar />
         <div className="flex min-h-0 flex-1">
           <Sidebar />
-          <main ref={scrollRef} className="relative min-w-0 flex-1 overflow-y-auto overflow-x-hidden">
+          <main ref={scrollRef} className="app-surface relative min-w-0 flex-1 overflow-y-auto overflow-x-hidden">
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={location.pathname}

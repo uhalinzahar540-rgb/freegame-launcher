@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { FolderOpen, HardDrive, ShieldCheck, TriangleAlert } from 'lucide-react'
 import { Modal } from '@/components/Modal'
 import { Cta } from '@/components/ui/primitives'
+import { useT } from '@/i18n'
 import { formatBytes } from '@/lib/format'
 import { backend, errorMessage } from '@/services'
 import { useLauncherStore } from '@/stores/launcher-store'
@@ -11,6 +12,7 @@ import type { Game } from '@/types'
 const EXTRACTION_FACTOR = 2.5
 
 export function InstallDialog({ game, open, onClose }: { game: Game; open: boolean; onClose: () => void }) {
+  const t = useT()
   const settings = useLauncherStore((s) => s.settings)
   const install = useLauncherStore((s) => s.install)
   const toast = useLauncherStore((s) => s.toast)
@@ -37,10 +39,10 @@ export function InstallDialog({ game, open, onClose }: { game: Game; open: boole
 
   async function chooseFolder() {
     try {
-      const picked = await backend.pickFolder('Папка установки')
+      const picked = await backend.pickFolder(t('install.folder'))
       if (picked) setDir(picked)
     } catch (error) {
-      toast('error', 'Не удалось выбрать папку', errorMessage(error))
+      toast('error', t('common.pickFolderFailed'), errorMessage(error))
     }
   }
 
@@ -57,15 +59,15 @@ export function InstallDialog({ game, open, onClose }: { game: Game; open: boole
     <Modal
       open={open}
       onClose={onClose}
-      title={`Установка ${game.title}`}
-      description={`Версия ${pkg.version} · ${pkg.format.toUpperCase()}-пакет`}
+      title={t('install.title', { title: game.title })}
+      description={t('install.description', { version: pkg.version, format: pkg.format.toUpperCase() })}
       footer={
         <>
           <Cta variant="ghost" onClick={onClose}>
-            Отмена
+            {t('common.cancel')}
           </Cta>
           <Cta onClick={confirm} disabled={!backend.isDesktop || submitting || insufficient}>
-            {submitting ? 'Запуск…' : 'Установить'}
+            {submitting ? t('install.starting') : t('common.install')}
           </Cta>
         </>
       }
@@ -74,58 +76,53 @@ export function InstallDialog({ game, open, onClose }: { game: Game; open: boole
         {!backend.isDesktop && (
           <div className="flex gap-3 rounded-xl border border-warning/30 bg-warning/10 p-3 text-sm text-warning">
             <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
-            <p>
-              Вы открыли интерфейс в браузере. Загрузка, распаковка и запуск игр выполняются Rust-ядром и работают
-              только в десктопной версии лаунчера.
-            </p>
+            <p>{t('install.browserWarning')}</p>
           </div>
         )}
 
         <div>
-          <p className="mb-1.5 text-xs font-medium text-muted-foreground">Папка установки</p>
+          <p className="mb-1.5 text-xs font-medium text-muted-foreground">{t('install.folder')}</p>
           <div className="flex gap-2">
             <div
               className="flex h-10 min-w-0 flex-1 items-center rounded-lg border border-border bg-background px-3 font-mono text-xs text-foreground/90"
               data-selectable
             >
-              <span className="truncate">{targetDir || 'Не задана'}</span>
+              <span className="truncate">{targetDir || t('install.notSet')}</span>
             </div>
             <Cta variant="secondary" onClick={chooseFolder} disabled={!backend.isDesktop}>
               <FolderOpen aria-hidden />
-              Изменить
+              {t('common.change')}
             </Cta>
           </div>
         </div>
 
         <dl className="grid grid-cols-2 gap-3 text-sm">
           <div className="rounded-xl border border-border bg-background/60 p-3">
-            <dt className="text-xs text-muted-foreground">Размер загрузки</dt>
+            <dt className="text-xs text-muted-foreground">{t('install.downloadSize')}</dt>
             <dd className="mt-1 font-semibold">{formatBytes(pkg.sizeBytes)}</dd>
           </div>
           <div className="rounded-xl border border-border bg-background/60 p-3">
             <dt className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <HardDrive className="size-3.5" aria-hidden /> Свободно на диске
+              <HardDrive className="size-3.5" aria-hidden /> {t('install.freeSpace')}
             </dt>
-            <dd className={`mt-1 font-semibold ${insufficient ? 'text-primary' : ''}`}>
-              {freeSpace === null ? 'Неизвестно' : formatBytes(freeSpace)}
+            <dd className={`mt-1 font-semibold ${insufficient ? 'text-destructive' : ''}`}>
+              {freeSpace === null ? t('install.unknown') : formatBytes(freeSpace)}
             </dd>
           </div>
         </dl>
 
         {insufficient && (
-          <p className="text-sm text-primary">
-            Недостаточно места: для загрузки и распаковки нужно около {formatBytes(required)}.
-          </p>
+          <p className="text-sm text-destructive">{t('install.insufficient', { size: formatBytes(required) })}</p>
         )}
 
         <div className="flex gap-3 rounded-xl border border-border bg-background/60 p-3 text-xs text-muted-foreground">
           <ShieldCheck className="mt-0.5 size-4 shrink-0 text-success" aria-hidden />
           <p>
-            Пакет будет проверен по SHA-256{' '}
+            {t('install.shaBefore')}{' '}
             <code className="font-mono text-foreground/80" data-selectable>
               {pkg.sha256.slice(0, 16)}…
             </code>{' '}
-            и безопасно распакован. Исполняемые файлы не запускаются автоматически.
+            {t('install.shaAfter')}
           </p>
         </div>
       </div>

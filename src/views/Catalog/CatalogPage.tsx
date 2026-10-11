@@ -3,21 +3,24 @@ import { Search, SearchX, X } from 'lucide-react'
 import { useSearchParams } from 'react-router'
 import { GameCard, GameCardSkeleton } from '@/components/GameCard'
 import { Cta, EmptyState, PageHeader } from '@/components/ui/primitives'
+import { useT, type MessageKey } from '@/i18n'
+import { compareText } from '@/lib/format'
 import { sourceLabel } from '@/lib/game-state'
 import { cn } from '@/lib/utils'
 import { useLauncherStore } from '@/stores/launcher-store'
 
 type SortKey = 'popular' | 'title' | 'new' | 'updated' | 'size'
 
-const SORTS: { value: SortKey; label: string }[] = [
-  { value: 'popular', label: 'По популярности' },
-  { value: 'title', label: 'По названию' },
-  { value: 'new', label: 'Недавно добавленные' },
-  { value: 'updated', label: 'Недавно обновлённые' },
-  { value: 'size', label: 'По размеру' },
+const SORTS: { value: SortKey; label: MessageKey }[] = [
+  { value: 'popular', label: 'catalog.sortPopular' },
+  { value: 'title', label: 'catalog.sortTitle' },
+  { value: 'new', label: 'catalog.sortNew' },
+  { value: 'updated', label: 'catalog.sortUpdated' },
+  { value: 'size', label: 'catalog.sortSize' },
 ]
 
 export function CatalogPage() {
+  const t = useT()
   const [params, setParams] = useSearchParams()
   const catalog = useLauncherStore((s) => s.catalog)
   const loading = useLauncherStore((s) => s.catalogLoading)
@@ -55,7 +58,7 @@ export function CatalogPage() {
     const sorted = [...filtered]
     switch (sort) {
       case 'title':
-        sorted.sort((a, b) => a.title.localeCompare(b.title, 'ru'))
+        sorted.sort((a, b) => compareText(a.title, b.title))
         break
       case 'new':
         sorted.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
@@ -76,25 +79,22 @@ export function CatalogPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6 lg:p-8">
-      <PageHeader
-        title="Каталог"
-        description="Игры из всех подключённых источников. Автоматическая установка доступна для пакетов с проверенной контрольной суммой."
-      />
+      <PageHeader title={t('catalog.title')} description={t('catalog.description')} />
 
       <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card/60 p-4">
         <div className="flex flex-wrap gap-3">
           <label className="group flex h-10 min-w-64 flex-1 items-center gap-2 rounded-lg border border-border bg-background px-3 focus-within:border-primary/70">
             <Search className="size-4 text-muted-foreground group-focus-within:text-primary" aria-hidden />
-            <span className="sr-only">Поиск по каталогу</span>
+            <span className="sr-only">{t('catalog.search')}</span>
             <input
               value={query}
               onChange={(e) => update('q', e.target.value)}
-              placeholder="Название, жанр или разработчик"
+              placeholder={t('catalog.searchPlaceholder')}
               className="h-full w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
             />
           </label>
           <label className="flex items-center gap-2 text-sm">
-            <span className="sr-only">Сортировка</span>
+            <span className="sr-only">{t('common.sort')}</span>
             <select
               value={sort}
               onChange={(e) => update('sort', e.target.value === 'popular' ? null : e.target.value)}
@@ -102,19 +102,19 @@ export function CatalogPage() {
             >
               {SORTS.map((s) => (
                 <option key={s.value} value={s.value}>
-                  {s.label}
+                  {t(s.label)}
                 </option>
               ))}
             </select>
           </label>
           <label className="flex items-center gap-2 text-sm">
-            <span className="sr-only">Источник</span>
+            <span className="sr-only">{t('catalog.source')}</span>
             <select
               value={source ?? ''}
               onChange={(e) => update('source', e.target.value || null)}
               className="h-10 rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-primary/70"
             >
-              <option value="">Все источники</option>
+              <option value="">{t('catalog.allSources')}</option>
               {sources.map((s) => (
                 <option key={s} value={s}>
                   {sourceLabel(s)}
@@ -133,12 +133,12 @@ export function CatalogPage() {
                 : 'border-border bg-background text-muted-foreground hover:text-foreground',
             )}
           >
-            Только с автоустановкой
+            {t('catalog.installableOnly')}
           </button>
         </div>
 
         {genres.length > 0 && (
-          <div className="flex flex-wrap gap-2" role="group" aria-label="Жанры">
+          <div className="flex flex-wrap gap-2" role="group" aria-label={t('catalog.genres')}>
             {genres.map((g) => {
               const active = g === genre
               return (
@@ -164,7 +164,7 @@ export function CatalogPage() {
 
       <div className="flex items-center justify-between text-sm text-muted-foreground">
         <p>
-          Найдено: <span className="font-semibold text-foreground tabular-nums">{results.length}</span>
+          {t('catalog.found')} <span className="font-semibold text-foreground tabular-nums">{results.length}</span>
         </p>
         {hasFilters && (
           <button
@@ -172,7 +172,7 @@ export function CatalogPage() {
             onClick={() => setParams(new URLSearchParams(), { replace: true })}
             className="flex items-center gap-1 hover:text-foreground"
           >
-            <X className="size-3.5" aria-hidden /> Сбросить фильтры
+            <X className="size-3.5" aria-hidden /> {t('catalog.reset')}
           </button>
         )}
       </div>
@@ -186,12 +186,12 @@ export function CatalogPage() {
       ) : results.length === 0 ? (
         <EmptyState
           icon={<SearchX />}
-          title="Ничего не найдено"
-          description="Попробуйте изменить запрос или сбросить фильтры."
+          title={t('common.nothingFound')}
+          description={t('catalog.emptyDescription')}
           action={
             hasFilters ? (
               <Cta variant="secondary" onClick={() => setParams(new URLSearchParams(), { replace: true })}>
-                Сбросить фильтры
+                {t('catalog.reset')}
               </Cta>
             ) : undefined
           }

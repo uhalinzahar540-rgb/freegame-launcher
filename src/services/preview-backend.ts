@@ -1,3 +1,5 @@
+import { detectLanguage, isLanguageCode, t } from '@/i18n'
+import { isThemeId } from '@/lib/themes'
 import { DesktopOnlyError, type Backend } from './backend'
 import type { Game, GamePackage, Settings, SourceInfo, SystemRequirements } from '@/types'
 
@@ -28,7 +30,9 @@ interface CatalogFile {
 const DEFAULT_SETTINGS: Settings = {
   launchOnStartup: false,
   minimizeToTray: true,
-  language: 'ru',
+  language: detectLanguage(),
+  theme: 'crimson',
+  onboardingCompleted: false,
   notifications: true,
   downloadDir: 'C:\\Users\\Player\\AppData\\Local\\FreeGameLauncher\\downloads',
   speedLimitKbps: 0,
@@ -45,12 +49,43 @@ const DEFAULT_SETTINGS: Settings = {
 }
 
 /**
+ * The desktop build keeps settings in SQLite. In the browser preview there is no
+ * database, so only the visual preferences chosen in the welcome wizard are kept
+ * in localStorage — otherwise the wizard would reappear on every reload.
+ */
+const PREVIEW_PREFS_KEY = 'freegame-launcher:preview-prefs'
+type PreviewPrefs = Pick<Settings, 'language' | 'theme' | 'onboardingCompleted'>
+
+function loadPreviewPrefs(): Partial<PreviewPrefs> {
+  try {
+    const raw = window.localStorage.getItem(PREVIEW_PREFS_KEY)
+    if (!raw) return {}
+    const parsed = JSON.parse(raw) as Partial<PreviewPrefs>
+    return {
+      ...(isLanguageCode(parsed.language) && { language: parsed.language }),
+      ...(isThemeId(parsed.theme) && { theme: parsed.theme }),
+      ...(typeof parsed.onboardingCompleted === 'boolean' && { onboardingCompleted: parsed.onboardingCompleted }),
+    }
+  } catch {
+    return {}
+  }
+}
+
+function savePreviewPrefs({ language, theme, onboardingCompleted }: Settings) {
+  try {
+    window.localStorage.setItem(PREVIEW_PREFS_KEY, JSON.stringify({ language, theme, onboardingCompleted }))
+  } catch {
+    // Storage can be unavailable (private mode, sandboxed iframe); prefs then last for the session only.
+  }
+}
+
+/**
  * Used when the UI runs in a regular browser (e.g. the v0 preview). It can read the
  * bundled catalog, but every filesystem/process operation is rejected explicitly
  * instead of being simulated.
  */
 export function createPreviewBackend(appVersion: string): Backend {
-  let settings: Settings = { ...DEFAULT_SETTINGS }
+  let settings: Settings = { ...DEFAULT_SETTINGS, ...loadPreviewPrefs() }
   let catalogCache: Game[] | null = null
   let catalogError: string | null = null
   const enabled: Record<string, boolean> = { opensource: true, local: true, freetp: true }
@@ -95,26 +130,26 @@ export function createPreviewBackend(appVersion: string): Backend {
     return [
       {
         id: 'opensource',
-        name: 'Открытые игры',
+        name: t('source.opensource'),
         kind: 'http',
         homepage: null,
         enabled: enabled.opensource,
         status: !enabled.opensource ? 'disabled' : catalogError ? 'error' : 'online',
         statusMessage: catalogError
-          ? `Каталог недоступен: ${catalogError}`
-          : 'Встроенный каталог открытых игр с проверенными SHA-256.',
+          ? t('preview.catalogUnavailable', { error: catalogError })
+          : t('preview.opensourceStatus'),
         lastSync: null,
         gameCount: enabled.opensource ? count : 0,
         capabilities: { search: true, metadata: true, autoInstall: true, openPage: true, updates: true },
       },
       {
         id: 'local',
-        name: 'Локальные игры',
+        name: t('source.localGames'),
         kind: 'local',
         homepage: null,
         enabled: enabled.local,
         status: enabled.local ? 'limited' : 'disabled',
-        statusMessage: 'Добавление игр с диска работает только в десктопной версии.',
+        statusMessage: t('preview.localStatus'),
         lastSync: null,
         gameCount: 0,
         capabilities: { search: true, metadata: false, autoInstall: false, openPage: false, updates: false },
@@ -126,8 +161,7 @@ export function createPreviewBackend(appVersion: string): Backend {
         homepage: 'https://freetp.org/',
         enabled: enabled.freetp,
         status: enabled.freetp ? 'limited' : 'disabled',
-        statusMessage:
-          'В браузере каталог недоступен (сайт не разрешает CORS). Десктопная версия читает публичную RSS-ленту; загрузка через FreeTP не поддерживается.',
+        statusMessage: t('preview.freetpStatus'),
         lastSync: null,
         gameCount: 0,
         capabilities: { search: true, metadata: true, autoInstall: false, openPage: true, updates: false },
@@ -162,37 +196,38 @@ export function createPreviewBackend(appVersion: string): Backend {
     },
 
     getLibrary: async () => [],
-    addManualGame: desktopOnly('Добавление игры с диска'),
-    setFavorite: desktopOnly('Избранное'),
-    uninstallGame: desktopOnly('Удаление игры'),
-    verifyGame: desktopOnly('Проверка файлов'),
+    addManualGame: desktopOnly('addManualGame'),
+    setFavorite: desktopOnly('setFavorite'),
+    uninstallGame: desktopOnly('uninstallGame'),
+    verifyGame: desktopOnly('verifyGame'),
     getPlayStats: async (gameId) => ({ gameId, totalSeconds: 0, sessionCount: 0, sessions: [] }),
 
     getDownloads: async () => [],
-    startInstall: desktopOnly('Загрузка и установка'),
-    pauseDownload: desktopOnly('Пауза загрузки'),
-    resumeDownload: desktopOnly('Продолжение загрузки'),
-    cancelDownload: desktopOnly('Отмена загрузки'),
-    retryDownload: desktopOnly('Повтор загрузки'),
+    startInstall: desktopOnly('startInstall'),
+    pauseDownload: desktopOnly('pauseDownload'),
+    resumeDownload: desktopOnly('resumeDownload'),
+    cancelDownload: desktopOnly('cancelDownload'),
+    retryDownload: desktopOnly('retryDownload'),
     clearFinishedDownloads: async () => undefined,
 
-    launchGame: desktopOnly('Запуск игры'),
+    launchGame: desktopOnly('launchGame'),
     getRunningGames: async () => [],
 
     checkUpdates: async () => [],
-    startUpdate: desktopOnly('Обновление игры'),
+    startUpdate: desktopOnly('startUpdate'),
     checkLauncherUpdate: async () => ({
       currentVersion: appVersion,
       configured: false,
       available: false,
       version: null,
       notes: null,
-      message: 'Проверка обновлений лаунчера выполняется в десктопной версии.',
+      message: t('updates.launcherPreview'),
     }),
 
     getSettings: async () => settings,
     async updateSettings(patch) {
       settings = { ...settings, ...patch }
+      savePreviewPrefs(settings)
       return settings
     },
     getFreeSpace: async () => null,
@@ -200,12 +235,12 @@ export function createPreviewBackend(appVersion: string): Backend {
     getNotifications: async () => [],
     markNotificationsRead: async () => undefined,
 
-    pickFolder: desktopOnly('Выбор папки'),
-    pickExecutable: desktopOnly('Выбор исполняемого файла'),
+    pickFolder: desktopOnly('pickFolder'),
+    pickExecutable: desktopOnly('pickExecutable'),
     async openExternal(url) {
       window.open(url, '_blank', 'noopener,noreferrer')
     },
-    openPath: desktopOnly('Открытие папки'),
+    openPath: desktopOnly('openPath'),
 
     onEvent: async () => () => undefined,
   }

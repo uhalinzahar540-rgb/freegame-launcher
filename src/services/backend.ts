@@ -1,3 +1,4 @@
+import { t } from '@/i18n'
 import type {
   AppNotification,
   BackendEvent,
@@ -59,9 +60,12 @@ export interface Backend {
 }
 
 export class DesktopOnlyError extends Error {
-  constructor(action = 'Это действие') {
-    super(`${action} доступно только в десктопной версии FreeGame Launcher.`)
+  readonly action: string
+
+  constructor(action = 'action') {
+    super(t('common.desktopOnly'))
     this.name = 'DesktopOnlyError'
+    this.action = action
   }
 }
 
@@ -71,5 +75,5 @@ export function errorMessage(error: unknown): string {
   if (error && typeof error === 'object' && 'message' in error) {
     return String((error as { message: unknown }).message)
   }
-  return 'Неизвестная ошибка'
+  return t('common.unknownError')
 }

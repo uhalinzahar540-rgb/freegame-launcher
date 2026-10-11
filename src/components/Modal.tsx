@@ -2,6 +2,7 @@ import { useEffect, useId, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
+import { useT } from '@/i18n'
 
 export function Modal({
   open,
@@ -19,6 +20,7 @@ export function Modal({
   footer?: ReactNode
 }) {
   const titleId = useId()
+  const t = useT()
 
   useEffect(() => {
     if (!open) return
@@ -38,7 +40,7 @@ export function Modal({
         >
           <button
             type="button"
-            aria-label="Закрыть"
+            aria-label={t('common.close')}
             className="absolute inset-0 bg-black/70 backdrop-blur-md"
             onClick={onClose}
           />
@@ -50,7 +52,7 @@ export function Modal({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.97 }}
             transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-            className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-border bg-card shadow-[0_30px_80px_-20px_rgba(229,9,20,0.35)]"
+            className="manga-panel relative w-full max-w-lg overflow-hidden rounded-2xl border border-border bg-card shadow-modal"
           >
             <div className="h-px bg-gradient-to-r from-transparent via-primary to-transparent" />
             <div className="flex items-start justify-between gap-4 px-6 pt-5">
@@ -63,7 +65,7 @@ export function Modal({
               <button
                 type="button"
                 onClick={onClose}
-                aria-label="Закрыть"
+                aria-label={t('common.close')}
                 className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-panel hover:text-foreground"
               >
                 <X className="size-4" />

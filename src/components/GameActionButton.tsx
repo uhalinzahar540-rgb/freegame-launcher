@@ -14,6 +14,7 @@ import {
 import { useNavigate } from 'react-router'
 import { InstallDialog } from '@/components/InstallDialog'
 import { Cta, type CtaVariantProps } from '@/components/ui/primitives'
+import { useT } from '@/i18n'
 import { useGameState } from '@/lib/game-state'
 import { cn } from '@/lib/utils'
 import { backend } from '@/services'
@@ -28,6 +29,7 @@ export function GameActionButton({
   size?: CtaVariantProps['size']
   className?: string
 }) {
+  const t = useT()
   const navigate = useNavigate()
   const state = useGameState(gameId)
   const [installOpen, setInstallOpen] = useState(false)
@@ -44,7 +46,7 @@ export function GameActionButton({
       case 'installable':
         return (
           <Cta {...common} variant="primary" onClick={() => setInstallOpen(true)}>
-            <Download aria-hidden /> Установить
+            <Download aria-hidden /> {t('common.install')}
           </Cta>
         )
       case 'external':
@@ -53,21 +55,21 @@ export function GameActionButton({
             {...common}
             variant="outline"
             onClick={() => game?.pageUrl && backend.openExternal(game.pageUrl)}
-            title="Автоматическая установка из этого источника не поддерживается"
+            title={t('action.externalHint')}
           >
-            <ExternalLink aria-hidden /> Открыть страницу
+            <ExternalLink aria-hidden /> {t('action.openPage')}
           </Cta>
         )
       case 'unavailable':
         return (
           <Cta {...common} variant="muted" disabled>
-            <Ban aria-hidden /> Недоступно
+            <Ban aria-hidden /> {t('action.unavailable')}
           </Cta>
         )
       case 'queued':
         return (
           <Cta {...common} variant="secondary" onClick={() => navigate('/downloads')}>
-            <LoaderCircle className="animate-spin" aria-hidden /> В очереди
+            <LoaderCircle className="animate-spin" aria-hidden /> {t('action.queued')}
           </Cta>
         )
       case 'downloading':
@@ -76,34 +78,34 @@ export function GameActionButton({
             {...common}
             variant="secondary"
             onClick={() => download && pauseDownload(download.id)}
-            title="Приостановить загрузку"
+            title={t('action.pauseHint')}
             className={cn(common.className, 'relative overflow-hidden')}
           >
             <span
-              className="absolute inset-y-0 left-0 bg-primary/30 transition-[width] duration-500"
+              className="absolute inset-y-0 start-0 bg-primary/30 transition-[width] duration-500"
               style={{ width: `${pct}%` }}
               aria-hidden
             />
             <Pause className="relative" aria-hidden />
-            <span className="relative tabular-nums">Загружается {pct}%</span>
+            <span className="relative tabular-nums">{t('action.downloading', { pct })}</span>
           </Cta>
         )
       case 'paused':
         return (
           <Cta {...common} variant="primary" onClick={() => download && resumeDownload(download.id)}>
-            <Play aria-hidden /> Продолжить · {pct}%
+            <Play aria-hidden /> {t('action.resume', { pct })}
           </Cta>
         )
       case 'verifying':
         return (
           <Cta {...common} variant="secondary" disabled>
-            <ShieldCheck className="animate-pulse" aria-hidden /> Проверка
+            <ShieldCheck className="animate-pulse" aria-hidden /> {t('action.verifying')}
           </Cta>
         )
       case 'installing':
         return (
           <Cta {...common} variant="secondary" disabled>
-            <LoaderCircle className="animate-spin" aria-hidden /> Установка
+            <LoaderCircle className="animate-spin" aria-hidden /> {t('action.installing')}
           </Cta>
         )
       case 'failed':
@@ -114,36 +116,36 @@ export function GameActionButton({
             onClick={() => download && retryDownload(download.id)}
             title={download?.error ?? ''}
           >
-            <RotateCcw aria-hidden /> Повторить
+            <RotateCcw aria-hidden /> {t('common.retry')}
           </Cta>
         )
       case 'running':
         return (
           <Cta {...common} variant="secondary" disabled>
-            <span className="size-2 animate-pulse rounded-full bg-success" aria-hidden /> Запущена
+            <span className="size-2 animate-pulse rounded-full bg-success" aria-hidden /> {t('action.running')}
           </Cta>
         )
       case 'update':
         return (
           <Cta {...common} variant="warning" onClick={() => startUpdate(gameId)}>
-            <RefreshCw aria-hidden /> Обновить
+            <RefreshCw aria-hidden /> {t('common.update')}
           </Cta>
         )
       case 'missing':
         return game?.package ? (
           <Cta {...common} variant="danger" onClick={() => setInstallOpen(true)}>
-            <TriangleAlert aria-hidden /> Переустановить
+            <TriangleAlert aria-hidden /> {t('action.reinstall')}
           </Cta>
         ) : (
-          <Cta {...common} variant="muted" disabled title="Исполняемый файл не найден">
-            <TriangleAlert aria-hidden /> Файл не найден
+          <Cta {...common} variant="muted" disabled title={t('action.missingHint')}>
+            <TriangleAlert aria-hidden /> {t('action.missing')}
           </Cta>
         )
       case 'installed':
       default:
         return (
           <Cta {...common} variant="play" onClick={() => launch(gameId)}>
-            <Play className="fill-current" aria-hidden /> Играть
+            <Play className="fill-current" aria-hidden /> {t('common.play')}
           </Cta>
         )
     }

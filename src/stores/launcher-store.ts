@@ -1,4 +1,6 @@
 import { create } from 'zustand'
+import { currentLanguage, detectLanguage, isLanguageCode, setLanguage, t } from '@/i18n'
+import { applyTheme, isThemeId } from '@/lib/themes'
 import { backend, errorMessage } from '@/services'
 import type {
   AppNotification,
@@ -22,6 +24,8 @@ export interface Toast {
 
 interface LauncherState {
   initialized: boolean
+  /** True once the settings request has settled (successfully or not). */
+  settingsResolved: boolean
   catalog: Game[]
   catalogLoading: boolean
   catalogError: string | null
@@ -70,12 +74,32 @@ interface LauncherState {
 let toastCounter = 0
 let unsubscribe: (() => void) | null = null
 
+/**
+ * Older desktop databases (and the Rust core until it learns the new fields) may return
+ * settings without language/theme/onboarding values, so fill in safe defaults here.
+ */
+function normalizeSettings(raw: Settings | null): Settings | null {
+  if (!raw) return null
+  return {
+    ...raw,
+    language: isLanguageCode(raw.language) ? raw.language : detectLanguage(),
+    theme: isThemeId(raw.theme) ? raw.theme : 'crimson',
+    onboardingCompleted: raw.onboardingCompleted === true,
+  }
+}
+
+function applyAppearance(settings: Settings | null) {
+  if (!settings) return
+  setLanguage(settings.language)
+  applyTheme(settings.theme)
+}
+
 export const useLauncherStore = create<LauncherState>((set, get) => {
-  async function attempt<T>(action: () => Promise<T>, failureTitle: string): Promise<T | undefined> {
+  async function attempt<T>(action: () => Promise<T>, failureTitle: () => string): Promise<T | undefined> {
     try {
       return await action()
     } catch (error) {
-      get().toast('error', failureTitle, errorMessage(error))
+      get().toast('error', failureTitle(), errorMessage(error))
       return undefined
     }
   }
@@ -130,6 +154,7 @@ export const useLauncherStore = create<LauncherState>((set, get) => {
 
   return {
     initialized: false,
+    settingsResolved: false,
     catalog: [],
     catalogLoading: true,
     catalogError: null,
@@ -150,12 +175,14 @@ export const useLauncherStore = create<LauncherState>((set, get) => {
       unsubscribe?.()
       unsubscribe = await backend.onEvent(handleEvent)
 
-      const [settings, running, notifications] = await Promise.all([
+      const [rawSettings, running, notifications] = await Promise.all([
         backend.getSettings().catch(() => null),
         backend.getRunningGames().catch(() => []),
         backend.getNotifications().catch(() => []),
       ])
-      set({ settings, running, notifications })
+      const settings = normalizeSettings(rawSettings)
+      applyAppearance(settings)
+      set({ settings, running, notifications, settingsResolved: true })
 
       await Promise.all([get().loadCatalog(), get().loadLibrary(), get().loadSources(), get().loadDownloads()])
 
@@ -174,69 +201,72 @@ export const useLauncherStore = create<LauncherState>((set, get) => {
       }
     },
     async loadLibrary() {
-      const library = await attempt(() => backend.getLibrary(), 'Не удалось загрузить библиотеку')
+      const library = await attempt(() => backend.getLibrary(), () => t('store.loadLibrary'))
       if (library) set({ library })
     },
     async loadSources() {
-      const sources = await attempt(() => backend.getSources(), 'Не удалось получить источники')
+      const sources = await attempt(() => backend.getSources(), () => t('store.loadSources'))
       if (sources) set({ sources })
     },
     async loadDownloads() {
-      const list = await attempt(() => backend.getDownloads(), 'Не удалось получить загрузки')
+      const list = await attempt(() => backend.getDownloads(), () => t('store.loadDownloads'))
       if (list) set({ downloads: Object.fromEntries(list.map((d) => [d.id, d])) })
     },
 
     async install(gameId, installDir) {
-      const task = await attempt(() => backend.startInstall(gameId, installDir), 'Не удалось начать загрузку')
+      const task = await attempt(() => backend.startInstall(gameId, installDir), () => t('store.install'))
       if (!task) return false
       upsertDownload(task)
       return true
     },
     async pauseDownload(id) {
-      await attempt(() => backend.pauseDownload(id), 'Не удалось приостановить загрузку')
+      await attempt(() => backend.pauseDownload(id), () => t('store.pause'))
     },
     async resumeDownload(id) {
-      await attempt(() => backend.resumeDownload(id), 'Не удалось продолжить загрузку')
+      await attempt(() => backend.resumeDownload(id), () => t('store.resume'))
     },
     async cancelDownload(id) {
-      await attempt(() => backend.cancelDownload(id), 'Не удалось отменить загрузку')
+      await attempt(() => backend.cancelDownload(id), () => t('store.cancel'))
     },
     async retryDownload(id) {
-      await attempt(() => backend.retryDownload(id), 'Не удалось повторить загрузку')
+      await attempt(() => backend.retryDownload(id), () => t('store.retry'))
     },
     async clearFinishedDownloads() {
-      await attempt(() => backend.clearFinishedDownloads(), 'Не удалось очистить список')
+      await attempt(() => backend.clearFinishedDownloads(), () => t('store.clear'))
       await get().loadDownloads()
     },
 
     async launch(gameId) {
-      const ok = await attempt(() => backend.launchGame(gameId).then(() => true), 'Не удалось запустить игру')
+      const ok = await attempt(() => backend.launchGame(gameId).then(() => true), () => t('store.launch'))
       if (ok) set((state) => ({ running: Array.from(new Set([...state.running, gameId])) }))
     },
     async uninstall(gameId) {
-      const ok = await attempt(() => backend.uninstallGame(gameId).then(() => true), 'Не удалось удалить игру')
+      const ok = await attempt(() => backend.uninstallGame(gameId).then(() => true), () => t('store.uninstall'))
       if (!ok) return false
       await get().loadLibrary()
-      get().toast('success', 'Игра удалена')
+      get().toast('success', t('store.uninstalled'))
       return true
     },
     async verify(gameId) {
-      const report = await attempt(() => backend.verifyGame(gameId), 'Проверка файлов не выполнена')
+      const report = await attempt(() => backend.verifyGame(gameId), () => t('store.verifyFailed'))
       if (!report) return null
       if (report.ok) {
-        get().toast('success', 'Файлы в порядке', `Проверено файлов: ${report.checkedFiles}`)
+        get().toast('success', t('store.verifyOk'), t('store.verifyOkBody', { count: report.checkedFiles }))
       } else {
         get().toast(
           'warning',
-          'Обнаружены проблемы',
-          `Отсутствует: ${report.missing.length}, изменено: ${report.modified.length}`,
+          t('store.verifyProblems'),
+          t('store.verifyProblemsBody', { missing: report.missing.length, modified: report.modified.length }),
         )
       }
       await get().loadLibrary()
       return report
     },
     async setFavorite(gameId, favorite) {
-      const ok = await attempt(() => backend.setFavorite(gameId, favorite).then(() => true), 'Не удалось изменить избранное')
+      const ok = await attempt(
+        () => backend.setFavorite(gameId, favorite).then(() => true),
+        () => t('store.favorite'),
+      )
       if (ok) {
         set((state) => ({
           library: state.library.map((i) => (i.gameId === gameId ? { ...i, favorite } : i)),
@@ -246,11 +276,11 @@ export const useLauncherStore = create<LauncherState>((set, get) => {
     async addManualGame(executablePath, title) {
       const installation = await attempt(
         () => backend.addManualGame(executablePath, title),
-        'Не удалось добавить игру',
+        () => t('store.addGame'),
       )
       if (!installation) return false
       await Promise.all([get().loadLibrary(), get().loadCatalog()])
-      get().toast('success', 'Игра добавлена в библиотеку', installation.title)
+      get().toast('success', t('store.gameAdded'), installation.title)
       return true
     },
 
@@ -262,45 +292,60 @@ export const useLauncherStore = create<LauncherState>((set, get) => {
         if (!silent) {
           get().toast(
             updates.length ? 'info' : 'success',
-            updates.length ? `Доступно обновлений: ${updates.length}` : 'Все игры обновлены',
+            updates.length ? t('store.updatesAvailable', { count: updates.length }) : t('store.allUpToDate'),
           )
         }
       } catch (error) {
-        if (!silent) get().toast('error', 'Проверка обновлений не выполнена', errorMessage(error))
+        if (!silent) get().toast('error', t('store.updatesFailed'), errorMessage(error))
       } finally {
         set({ checkingUpdates: false })
       }
     },
     async startUpdate(gameId) {
-      const task = await attempt(() => backend.startUpdate(gameId), 'Не удалось начать обновление')
+      const task = await attempt(() => backend.startUpdate(gameId), () => t('store.updateStart'))
       if (task) upsertDownload(task)
     },
 
     async updateSettings(patch) {
       const previous = get().settings
-      if (previous) set({ settings: { ...previous, ...patch } })
-      const settings = await attempt(() => backend.updateSettings(patch), 'Не удалось сохранить настройки')
-      set({ settings: settings ?? previous })
+      const languageChanged = !!patch.language && patch.language !== currentLanguage()
+      const optimistic = previous ? { ...previous, ...patch } : null
+      if (optimistic) {
+        set({ settings: optimistic })
+        applyAppearance(optimistic)
+      }
+      const saved = normalizeSettings(
+        (await attempt(() => backend.updateSettings(patch), () => t('store.settings'))) ?? null,
+      )
+      // Keep the optimistic value for fields the backend did not echo back (e.g. an older Rust core).
+      const next = saved ? { ...saved, ...patch } : previous
+      set({ settings: next })
+      applyAppearance(next)
+      if (languageChanged) void get().loadSources()
     },
     async setSourceEnabled(sourceId, enabled) {
-      const source = await attempt(() => backend.setSourceEnabled(sourceId, enabled), 'Не удалось изменить источник')
+      const source = await attempt(() => backend.setSourceEnabled(sourceId, enabled), () => t('store.sourceToggle'))
       if (!source) return
       set((state) => ({ sources: state.sources.map((s) => (s.id === sourceId ? source : s)) }))
       await get().loadCatalog()
     },
     async refreshSource(sourceId) {
-      const source = await attempt(() => backend.refreshSource(sourceId), 'Не удалось обновить источник')
+      const source = await attempt(() => backend.refreshSource(sourceId), () => t('store.sourceRefresh'))
       if (!source) return
       set((state) => ({ sources: state.sources.map((s) => (s.id === sourceId ? source : s)) }))
       await get().loadCatalog()
       if (source.status === 'error' || source.status === 'offline') {
-        get().toast('warning', `${source.name}: каталог не обновлён`, source.statusMessage ?? undefined)
+        get().toast('warning', t('store.sourceNotUpdated', { name: source.name }), source.statusMessage ?? undefined)
       } else {
-        get().toast('success', `${source.name}: каталог обновлён`, `Игр: ${source.gameCount}`)
+        get().toast(
+          'success',
+          t('store.sourceUpdated', { name: source.name }),
+          t('store.gamesCount', { count: source.gameCount }),
+        )
       }
     },
     async markNotificationsRead() {
-      await attempt(() => backend.markNotificationsRead(), 'Не удалось отметить уведомления')
+      await attempt(() => backend.markNotificationsRead(), () => t('store.notifications'))
       set((state) => ({ notifications: state.notifications.map((n) => ({ ...n, read: true })) }))
     },
 
