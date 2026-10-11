@@ -1,4 +1,4 @@
-import { DownloadRow } from '@/pages/Downloads/DownloadRow'
+import { DownloadRow } from '@/views/Downloads/DownloadRow'
 import type { DownloadTask } from '@/types'
 
 export function DownloadPanel({ task }: { task: DownloadTask }) {
